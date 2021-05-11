@@ -1,0 +1,84 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://SinsGold.otf" type="DynamicFontData" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+
+const expected_parent_node_path := \"/root/Main/Title/Background\"
+
+var warning_count := 0
+
+func _ready():
+    $\"/root/Main/Title/Background/Title Text\".connect(\"visibility_changed\", self, \"_on_menu_visibility_changed\")
+
+func _on_menu_visibility_changed():
+    visible = $\"/root/Main/Title/Background/Title Text\".visible
+
+func set_version(version: String):
+    $Root/Version.text = version
+
+func set_counts(mod_count: int):
+    $Root/Mods.text = str(mod_count) + \" loaded mod\"
+    if mod_count != 1:
+        $Root/Mods.text += \"s\"
+
+func increment_warning_count(increment: int = 1):
+    warning_count += increment
+    $Root/Warnings.text = str(warning_count) + \" warnings\"
+"
+
+[sub_resource type="DynamicFont" id=2]
+extra_spacing_top = -4
+extra_spacing_bottom = -4
+extra_spacing_space = -1
+font_data = ExtResource( 1 )
+
+[node name="MainMenuOverlay" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource( 1 )
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="Root" type="Control" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -25.0
+margin_right = 300.0
+margin_bottom = 75.0
+rect_scale = Vector2( 0.25, 0.25 )
+__meta__ = {
+"_edit_lock_": true,
+"_edit_use_anchors_": false
+}
+
+[node name="Version" type="Label" parent="Root"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 7.0
+margin_top = -57.0
+margin_right = 83.0
+margin_bottom = -36.0
+custom_fonts/font = SubResource( 2 )
+text = "LuckyAPI vX.X.X"
+valign = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Mods" type="Label" parent="Root"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 7.0
+margin_top = -47.0
+margin_right = 57.0
+margin_bottom = -26.0
+custom_fonts/font = SubResource( 2 )
+text = ""
+valign = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}

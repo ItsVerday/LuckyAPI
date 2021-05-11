@@ -1,0 +1,111 @@
+[gd_scene load_steps=3 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+var ifad: Dictionary
+
+# Called when the node enters the scene tree for the first time.
+func _enter_tree():
+    print(\"Loading translations\")
+    #var tr_old: Translation = load(\"res://ttest.en.translation\")
+    #TranslationServer.remove_translation(tr_old)
+    print(null and \"red\")
+    print(\"red\" or \"blue\")
+    #create_tr()
+    
+    
+func create_tr():
+    var tr := Translation.new()
+    tr.add_message(\"test\", \"New test fasdf\")
+    tr.add_message(\"fdsafads\", \"New test2 fsldk\")
+    tr.add_message(\"rubik\", \"New test2 fsldk\")
+    tr.add_message(\"holsadf\", \"New test2 fsldk\")
+    tr.add_message(\"kanaautoos\", \"New test2 fsldk\")
+    tr.add_message(\"amaka\", \"New test2 fsldk\")
+    tr.add_message(\"camara\", \"New test2 fsldk\")
+    var tr_comp := PHashTranslation.new()
+    tr_comp.generate(tr)
+    
+    print(tr_comp.get_message(\"dsfadsf\") == null)
+    
+    print(tr_comp.hash_table.size())
+    
+    for string in tr.get_message_list():
+        print(string, \" before: \", tr_comp.get_message(string))
+        phashtranslation_remove_message(string, tr_comp)
+        print(string, \" after: \", tr_comp.get_message(string))
+
+const uint32_limit := 0x100000000
+
+func phashtranslation_remove_message(message: String, tr: PHashTranslation):
+    var hash_raw: int = string_hash(0, message)
+    var hash_idx: int = hash_raw % tr.hash_table.size()
+    #print(h, \" -> \", tr.hash_table[h])
+    
+    var bucket_idx: int = tr.hash_table[hash_idx]
+    var bucket_size: int = tr.bucket_table[bucket_idx]
+    var bucket_func: int = tr.bucket_table[bucket_idx + 1]
+    var expected_key = string_hash(bucket_func, message)
+    #print(\"expected \", expected_key)
+    for i in bucket_size:
+        var key_idx: int = bucket_idx + 2 + i * 4
+        var key: int = tr.bucket_table[key_idx]
+        if key < 0:
+            key += uint32_limit
+        #print(key)
+        if key == expected_key:
+            print(\"Found!\")
+            tr.bucket_table[key_idx] = 0
+            return
+
+# Hashing function used by PHashTranslation.
+# Implementation copied from Godot engine source code and adapted for GDScript.
+func string_hash(d: int, string: String):
+    if d == 0:
+        d = 0x1000193
+    
+    for ch in string.to_utf8():
+        #print(d, \" \", (d * 0x1000193) ,\" \",((d * 0x1000193) % maxvalue), \" \", (((d * 0x1000193) % maxvalue) ^ ch) % maxvalue)
+        d = (((d * 0x1000193) % uint32_limit) ^ ch) % uint32_limit;
+    
+    return d;
+
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Label
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+    print(\"Translating\")
+    print(tr(\"test\"))
+    print(tr(\"test2\"))
+    text = tr(\"test\")
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+#func _process(delta):
+#    pass
+"
+
+[node name="__" type="Node"]
+script = SubResource( 1 )
+
+[node name="Label" type="Label" parent="."]
+margin_right = 40.0
+margin_bottom = 14.0
+script = SubResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
