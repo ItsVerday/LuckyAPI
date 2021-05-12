@@ -5,11 +5,13 @@ func init(modloader: Reference):
 
     self.id = "test"
     self.value = 10
-    self.values = [50]
+    self.values = [1]
     self.rarity = "common"
     self.groups = []
 
     self.texture = load_texture("res://examplemod/symbols/test.png")
+    add_sfx_redirect("oyster")
+    
     self.name = "Test Symbol"
     self.description = "A test symbol used to test LuckyAPI."
 

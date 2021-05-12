@@ -14,6 +14,7 @@ var databases := {}
 var globals := {}
 var mod_symbols := {}
 var mods := {}
+var current_mod_name := ""
 
 func _init(tree: SceneTree):
     self.tree = tree
@@ -23,6 +24,7 @@ func add_mod_symbol(path: String):
     mod_symbol.init(self)
     var id := mod_symbol.id
     mod_symbols[id] = mod_symbol
+    mod_symbol.mod_name = current_mod_name
 
     databases.icon_texture_database[id] = mod_symbol.texture
     for extra_texture_key in mod_symbol.extra_textures.keys():
@@ -36,6 +38,7 @@ func add_mod_symbol(path: String):
         "rarity": mod_symbol.rarity
     }
 
+    databases.sfx_database.symbols[id] = mod_symbol.sfx
     databases.rarity_database.symbols[mod_symbol.rarity].push_back(id)
 
     for group in mod_symbol.groups:
@@ -226,15 +229,18 @@ func load_mods():
 
                 mods[mod_name] = mod
                 print("LuckyAPI MODLOADER > Mod loaded: " + mod_name)
-            
+                                
             found_name = _dir.get_next()
 
     print("LuckyAPI MODLOADER > Running load method on mods...")
-    for mod in mods.values():
+    for mod_name in mods.keys():
+        var mod := mods[mod_name]
         if mod.has_method("load"):
+            current_mod_name = mod_name
             mod.load(self, tree)
     
     print("LuckyAPI MODLOADER > Loading mods complete!")
+
 
 static func extract_script(scene: PackedScene, node_name: String) -> GDScript:
     var state: SceneState = scene.get_state()
