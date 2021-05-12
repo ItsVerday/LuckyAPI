@@ -4,12 +4,12 @@ onready var modloader: Reference = get_tree().modloader
 var mod_symbol := null
 
 func _ready():
-    update_mod_symbol(self.type)
     ._ready()
+    update_mod_symbol(self.type)
 
 func change_type(p_type: String, need_cond_effects: bool):
-    update_mod_symbol(p_type)
     .change_type(p_type, need_cond_effects)
+    update_mod_symbol(p_type)
 
 func update_mod_symbol(new_type: String):
     var mod_symbols := modloader.mod_symbols
@@ -59,5 +59,6 @@ func add_conditional_effects():
     if mod_symbol != null:
         var adj_icons := self.get_adjacent_icons()
         mod_symbol.add_conditional_effects(self, adj_icons)
+        add_effect({"comparisons": [{"a": "destroyed", "b": true, "not_prev": true}], "value_to_change": "type", "diff": "empty", "push_front": true})
     else:
         .add_conditional_effects()
