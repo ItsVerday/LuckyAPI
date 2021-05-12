@@ -164,7 +164,6 @@ func before_start():
     print("LuckyAPI MODLOADER > Initializing LuckyAPI " + modloader_version + "...")
     _assert(ProjectSettings.load_resource_pack(exe_dir.plus_file("luckyapi/modloader.zip"), true), "Failed to load LuckyAPI internals!")
 
-    Utils.ensure_dir_exists("user://_luckyapi_loadtemp")
     Utils.ensure_dir_exists("user://_luckyapi_patched")
 
     var main_script := extract_script(load("res://Main.tscn"), "Main").source_code
