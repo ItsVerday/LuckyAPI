@@ -10,4 +10,7 @@ Download the `luckyapi.zip` file from this repo, and place it in your executable
 Mods are `.zip` files containing the mod's code and assets. Mods are placed in the `mods` folder in your save directory. To get to this directory, launch the game and press `F8`. This will take you to your run logs folder. Go one back in the file explorer, until you see a folder with the `LBAL.save` file in it. Create a new folder called `mods`, and place any mods in this folder. Once you launch the game again, the mods will be loaded into your game!
 
 # Example mod
-There is a basic example mod in the `luckyapi` folder. This mod is a directory that can be zipped into a funcional mod. The mod is very primitive, as it was mostly used to test LuckyAPI up until this point. It doesn't do anything interesting.
+There is a basic example mod in the `luckyapi` folder. This mod is a directory that can be zipped into a funcional mod. The mod is very primitive, as it was mostly used to test LuckyAPI. It doesn't do anything interesting.
+
+# Valgo's Content Pack
+My mod, which adds a handful of new symbols, can be found in the `mods` folder of this repository. Feel free to use it as a reference to develop your own mods.
