@@ -20,13 +20,14 @@ var modifies_adjacent_adjacency := false
 var modifies_global_adjacency := false
 
 func init(modloader: Reference):
+    self.modloader = modloader
     print("No initialization behavior for custom symbol defined in " + self.get_script().get_path())
 
 func load_texture(path: String) -> ImageTexture:
     var image := Image.new()
     var err := image.load(path)
     _assert(err == OK, "Texture named " + id + " failed to load!")
-    texture = ImageTexture.new()
+    var texture := ImageTexture.new()
     texture.create_from_image(image, 0)
 
     return texture

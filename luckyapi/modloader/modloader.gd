@@ -10,10 +10,12 @@ var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
 
+var mods := {}
 var databases := {}
 var globals := {}
 var mod_symbols := {}
-var mods := {}
+var symbol_patches := {}
+var translations := {}
 var current_mod_name := ""
 
 func _init(tree: SceneTree):
@@ -59,13 +61,100 @@ func add_mod_symbol(path: String):
         for locale in mod_symbol.description.keys():
             add_translation(id + "_desc", mod_symbol.description[locale], locale)
     
+    if symbol_patches.has(id):
+        for symbol_patch in symbol_patches[id]:
+            patch_symbol(symbol_patch, id)
+    
     print("LuckyAPI MODLOADER > Mod Symbol added: " + id)
 
+func add_symbol_patch(path: String):
+    var symbol_patch := load(path).new()
+    symbol_patch.init(self)
+    var id := symbol_patch.id
+    if not symbol_patches.has(id):
+        symbol_patches[id] = []
+    symbol_patches[id].push_back(symbol_patch)
+
+    if databases.tile_database.has(id):
+        patch_symbol(symbol_patch, id)
+    
+    print("LuckyAPI MODLOADER > Symbol patched: " + id)
+
+func patch_symbol(symbol_patch, id):
+    var mod_symbol := mod_symbols[id]
+    var database_entry := databases.tile_database[id]
+
+    var value := symbol_patch.patch_value(database_entry.value)
+    database_entry.value = value
+    if mod_symbol != null:
+        mod_symbol.value = value
+    
+    var values := symbol_patch.patch_values(database_entry.values)
+    database_entry.values = values
+    if mod_symbol != null:
+        mod_symbol.values = values
+
+    var rarity := symbol_patch.patch_rarity(database_entry.rarity)
+    database_entry.rarity = rarity
+    if mod_symbol != null:
+        mod_symbol.rarity = rarity
+    
+    var groups := symbol_patch.patch_groups(database_entry.groups)
+    database_entry.groups = groups
+    if mod_symbol != null:
+        mod_symbol.groups = groups
+
+    var texture := symbol_patch.patch_groups(databases.icon_texture_database[id])
+    databases.icon_texture_database[id] = texture
+    if mod_symbol != null:
+        mod_symbol.texture = texture
+
+    if mod_symbol != null:
+        var extra_textures := symbol_patch.patch_extra_textures(mod_symbol.extra_textures)
+        mod_symbol.extra_textures = extra_textures
+        for extra_texture_key in extra_textures.keys():
+            databases.icon_texture_database[id + "_" + extra_texture_key] = extra_textures[extra_texture_key]
+    
+        var sfx := symbol_patch.patch_sfx(mod_symbol.sfx)
+        mod_symbol.sfx = sfx
+        databases.sfx_database.symbols[id] = sfx
+    
+        var sfx_redirects := symbol_patch.patch_sfx_redirects(mod_symbol.sfx_redirects)
+        mod_symbol.sfx_redirects = sfx_redirects
+    
+    if mod_symbol != null:
+        var name := symbol_patch.patch_name(mod_symbol.name)
+        mod_symbol.name = name
+        if name is String:
+            add_translation(id, name)
+        elif name is Dictionary:
+            for locale in name.keys():
+                add_translation(id, name[locale], locale)
+    else:
+        var name := symbol_patch.patch_name(TranslationServer.translate(id))
+        add_translation(id, name, TranslationServer.get_locale())
+
+    if mod_symbol != null:
+        var description := symbol_patch.patch_description(mod_symbol.description)
+        mod_symbol.description = description
+        if description is String:
+            add_translation(id + "_desc", description)
+        elif description is Dictionary:
+            for locale in description.keys():
+                add_translation(id + "_desc", description[locale], locale)
+    else:
+        var description := symbol_patch.patch_description(TranslationServer.translate(id + "_desc"))
+        add_translation(id + "_desc", description, TranslationServer.get_locale())
+
 func add_translation(key: String, value: String, locale := "en"):
-    var translation := Translation.new()
-    translation.locale = locale
+    var translation := translations[locale]
+    if translation == null:
+        translation = Translation.new()
+        translation.locale = locale
+        TranslationServer.add_translation(translation)
+        translations[locale] = translation
+    
     translation.add_message(key, value)
-    TranslationServer.add_translation(translation)
 
 
 func match_value(value: String, match_against):

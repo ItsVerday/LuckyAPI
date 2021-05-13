@@ -13,6 +13,7 @@ func _ready():
 func change_type(p_type: String, need_cond_effects: bool):
     .change_type(p_type, need_cond_effects)
     update_mod_symbol(p_type)
+    set_texture($"/root/Main".icon_texture_database[self.type])
 
 func update_mod_symbol(new_type: String):
     var mod_symbols := modloader.mod_symbols
@@ -128,9 +129,14 @@ func update_value_text():
         .update_value_text()
 
 func add_conditional_effects():
+    var adj_icons := self.get_adjacent_icons()
     if mod_symbol != null:
-        var adj_icons := self.get_adjacent_icons()
         mod_symbol.add_conditional_effects(self, adj_icons)
         add_effect({"comparisons": [{"a": "destroyed", "b": true, "not_prev": true}], "value_to_change": "type", "diff": "empty", "push_front": true})
     else:
         .add_conditional_effects()
+    
+    var patches := modloader.symbol_patches[self.type]
+    if patches != null:
+        for patch in patches:
+            patch.add_conditional_effects(self, adj_icons)
