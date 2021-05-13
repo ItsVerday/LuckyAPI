@@ -12,7 +12,7 @@ func init(modloader: Reference):
 
     self.texture = load_texture("res://valgos-content-pack/symbols/bank.png")
     self.name = "Bank"
-    self.description = "Permanently gives <icon_coin><color_FBF236><value_3><end> more after every <color_E14A68><value_2> turns<end>. Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <icon_coin>."
+    self.description = "Permanently gives <icon_coin><color_FBF236><value_3><end> more after every <color_E14A68><value_2> turns<end>. Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <hover_coin>."
 
 func add_conditional_effects(symbol, adjacent):
     symbol.add_effect({"comparisons": [{"a": "values", "value_num": 0, "rand": true}], "sfx_type": "spawn", "anim": "circle", "tiles_to_add": [{"type": "coin"}]})

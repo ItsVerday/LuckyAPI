@@ -25,12 +25,12 @@ func add_conditional_effects(symbol, adjacent):
             all_different = false
             break
         adjacent_symbols.push_back(adjacent_symbol.type)
-    print("Rainbow effect: " + str(all_different))
-    print(adjacent)
-
+    
     if all_different:
         var animate := [symbol]
         for i in adjacent:
+            if i.type == "empty":
+                continue
             symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [], "value_to_change": "value_multiplier", "diff": values[0]})
             animate.push_back(i)
         symbol.add_effect({"comparisons": [], "anim": "circle", "anim_targets": animate})
