@@ -3,7 +3,7 @@ extends Reference
 var modloader: Reference
 var id: String
 
-func init(modloader: Reference):
+func init(modloader: Reference, params):
     self.modloader = modloader
     print("No initialization behavior for symbol patch defined in " + self.get_script().get_path())
 

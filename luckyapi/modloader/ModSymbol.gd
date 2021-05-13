@@ -19,7 +19,7 @@ var modifies_self_adjacency := false
 var modifies_adjacent_adjacency := false
 var modifies_global_adjacency := false
 
-func init(modloader: Reference):
+func init(modloader: Reference, params):
     self.modloader = modloader
     print("No initialization behavior for custom symbol defined in " + self.get_script().get_path())
 

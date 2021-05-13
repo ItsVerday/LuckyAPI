@@ -21,9 +21,9 @@ var current_mod_name := ""
 func _init(tree: SceneTree):
     self.tree = tree
 
-func add_mod_symbol(path: String):
+func add_mod_symbol(path: String, params := {}):
     var mod_symbol := load(path).new()
-    mod_symbol.init(self)
+    mod_symbol.init(self, params)
     var id := mod_symbol.id
     mod_symbols[id] = mod_symbol
     mod_symbol.mod_name = current_mod_name
@@ -67,9 +67,9 @@ func add_mod_symbol(path: String):
     
     print("LuckyAPI MODLOADER > Mod Symbol added: " + id)
 
-func add_symbol_patch(path: String):
+func add_symbol_patch(path: String, params := {}):
     var symbol_patch := load(path).new()
-    symbol_patch.init(self)
+    symbol_patch.init(self, params)
     var id := symbol_patch.id
     if not symbol_patches.has(id):
         symbol_patches[id] = []
@@ -104,7 +104,7 @@ func patch_symbol(symbol_patch, id):
     if mod_symbol != null:
         mod_symbol.groups = groups
 
-    var texture := symbol_patch.patch_groups(databases.icon_texture_database[id])
+    var texture := symbol_patch.patch_texture(databases.icon_texture_database[id])
     databases.icon_texture_database[id] = texture
     if mod_symbol != null:
         mod_symbol.texture = texture
