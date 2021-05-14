@@ -1,10 +1,10 @@
 extends "res://modloader/ModSymbol.gd"
 
-func init(modloader: Reference):
+func init(modloader: Reference, params):
     self.modloader = modloader
 
     self.id = "dragon"
-    self.value = 7
+    self.value = 5
     self.values = [3, 1]
     self.rarity = "very_rare"
     self.groups = ["organism", "animal"]

@@ -5,12 +5,13 @@ const Utils = preload("res://modloader/utils.gd")
 const ModSymbol = preload("res://modloader/ModSymbol.gd")
 
 const modloader_version := "v0.1.0"
-const expected_version := "Content Patch #6 -- Hotfix #2"
+const expected_version := "v0.6.3"
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
 
 var mods := {}
+var mod_count := 0
 var databases := {}
 var globals := {}
 var mod_symbols := {}
@@ -254,17 +255,15 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
 
 func before_start():
     print("LuckyAPI MODLOADER > Initializing LuckyAPI " + modloader_version + "...")
-    _assert(ProjectSettings.load_resource_pack(exe_dir.plus_file("luckyapi/modloader.zip"), true), "Failed to load LuckyAPI internals!")
-
     Utils.ensure_dir_exists("user://_luckyapi_patched")
 
     var main_script := extract_script(load("res://Main.tscn"), "Main").source_code
     var regex := RegEx.new()
-    regex.compile("\\sversion_str\\s*=\\s*\"(.*?)\"")
+    regex.compile("\\s*var\\s*content_patch_num\\s*=\\s*(\\d*)\\n\\s*var\\s*hotfix_num\\s*=\\s*(\\d*)")
     var matched_version := regex.search(main_script)
     _assert(matched_version != null, "Version check failed: Unable to determine game version. This modloader is for game version " + expected_version + "!")
 
-    game_version = matched_version.strings[1]
+    game_version = "v0." + str(matched_version.get_string(1)) + "." + str(matched_version.get_string(2))
     print("LuckyAPI MODLOADER > Game version " + game_version)
     _assert(expected_version == game_version, "Version mismatch: This modloader is for version '" + expected_version + "' but the game is running version '" + game_version + "'!")
 
@@ -275,8 +274,8 @@ func patch_preload():
 
     var packer := PCKPacker.new()
     _assert(packer.pck_start("user://_luckyapi_patched/preload.pck") == OK, "Opening preload.pck for writing failed!")
-    patch("res://Main.tscn", "res://modloader/patches/Main.gd", "Main", packer)
-    patch("res://Slot Icon.tscn", "res://modloader/patches/SlotIcon.gd", "Slot Icon", packer)
+    patch("res://Main.tscn", ["res://modloader/patches/Main.gd", "res://modloader/patches/Title.gd"], ["Main", "Title"], packer)
+    patch("res://Slot Icon.tscn", ["res://modloader/patches/SlotIcon.gd"], ["Slot Icon"], packer)
 
     _assert(packer.flush(true) == OK, "Failed to write to preload.pck")
     
@@ -292,13 +291,6 @@ func patch_preload():
 func after_start():
     load_mods()
 
-    print("LuckyAPI MODLOADER > Adding UI overlay...")
-    
-    var overlay := load("res://modloader/MainMenuOverlay.tscn").instance()
-    tree.root.get_node(overlay.expected_parent_node_path).add_child(overlay)
-    overlay.set_version("LuckyAPI " + modloader_version)
-    overlay.set_counts(mods.values().size())
-
     print("LuckyAPI MODLOADER > Initialization complete!")
 
 func load_mods():
@@ -309,14 +301,15 @@ func load_mods():
         _assert(_dir.list_dir_begin(true) == OK, "list_dir_began failed!")
         var found_name := _dir.get_next()
         while found_name != "":
-            if !_dir.current_is_dir():
+            if _dir.current_is_dir():
                 print("LuckyAPI MODLOADER > Mod found: " + found_name)
-                _assert(ProjectSettings.load_resource_pack(mods_dir.plus_file(found_name), true), "Failed to load mod " + found_name)
+                load_folder(mods_dir.plus_file(found_name), found_name, "mod_" + found_name)
                 var mod_name := found_name.trim_suffix(".zip")
                 var mod_script := load("res://" + mod_name + "/mod.gd")
                 var mod := mod_script.new()
 
                 mods[mod_name] = mod
+                mod_count += 1
                 print("LuckyAPI MODLOADER > Mod loaded: " + mod_name)
                                 
             found_name = _dir.get_next()
@@ -353,9 +346,10 @@ static func extract_script(scene: PackedScene, node_name: String) -> GDScript:
     
     return extracted_script
 
-func patch(target_path: String, new_script_path: String, node_name: String, packer: PCKPacker):
+func patch(target_path: String, new_script_path: Array, node_name: Array, packer: PCKPacker):
     var scene := load(target_path)
-    replace_script_and_pack_original(packer, scene, node_name, new_script_path)
+    for i in range(new_script_path.size()):
+        replace_script_and_pack_original(packer, scene, node_name[i], new_script_path[i])
     save_and_pack_resource(packer, scene, target_path)
 
 func replace_script_and_pack_original(packer: PCKPacker, scene: PackedScene, node_name: String, new_script_path: String):
@@ -372,6 +366,29 @@ func save_and_pack_resource(packer: PCKPacker, res: Resource, target_path: Strin
 func force_reload(resource_path: String):
     var new := ResourceLoader.load(resource_path, "", true)
     new.take_over_path(resource_path)
+
+func load_folder(path: String, folder: String, name := "content.pck"):
+    var exe_dir := OS.get_executable_path().get_base_dir()
+    var pck_file := exe_dir.plus_file("luckyapi").plus_file("content.pck")
+
+    var packer := PCKPacker.new()
+    _assert(packer.pck_start(pck_file) == OK, "Opening " + name + " for writing failed!")
+    recursive_pack(packer, path, "res://".plus_file(folder))
+    _assert(packer.flush(true) == OK, "Failed to write to " + name + "!")
+    _assert(ProjectSettings.load_resource_pack(pck_file, true), "Failed to load " + name + "!")
+
+func recursive_pack(packer: PCKPacker, path: String, packer_path: String):
+    var dir := Directory.new()
+    if dir.open(path) == OK:
+        dir.list_dir_begin()
+        var file_name = dir.get_next()
+        while file_name != "":
+            if file_name != "." and file_name != "..":
+                if dir.current_is_dir():
+                    recursive_pack(packer, path.plus_file(file_name), packer_path.plus_file(file_name))
+                else:
+                    packer.add_file(packer_path.plus_file(file_name), path.plus_file(file_name))
+            file_name = dir.get_next()
 
 func _assert(condition: bool, message: String):
     if !condition:

@@ -1,6 +1,6 @@
 extends "res://modloader/ModSymbol.gd"
 
-func init(modloader: Reference):
+func init(modloader: Reference, params):
     self.modloader = modloader
 
     self.id = "pineapple"

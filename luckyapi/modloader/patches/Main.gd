@@ -1,9 +1,10 @@
 extends "res://Main_Main.gd"
 
+var modloader := null
 func _ready():
     ._ready()
 
-    var modloader = get_tree().modloader
+    modloader = get_tree().modloader
     load_globals(modloader)
 
 func load_globals(modloader: Reference):
