@@ -67,6 +67,7 @@ func add_mod_symbol(path: String, params := {}):
             patch_symbol(symbol_patch, id)
     
     print("LuckyAPI MODLOADER > Mod Symbol added: " + id)
+    return mod_symbol
 
 func add_symbol_patch(path: String, params := {}):
     var symbol_patch := load(path).new()
@@ -80,6 +81,7 @@ func add_symbol_patch(path: String, params := {}):
         patch_symbol(symbol_patch, id)
     
     print("LuckyAPI MODLOADER > Symbol patched: " + id)
+    return symbol_patch
 
 func patch_symbol(symbol_patch, id):
     var mod_symbol := mod_symbols[id]
@@ -321,6 +323,7 @@ func load_mods():
             current_mod_name = mod_name
             mod.load(self, tree)
     
+    recursive_folder_delete("user://_luckyapi_patched")
     print("LuckyAPI MODLOADER > Loading mods complete!")
 
 
@@ -389,6 +392,20 @@ func recursive_pack(packer: PCKPacker, path: String, packer_path: String):
                 else:
                     packer.add_file(packer_path.plus_file(file_name), path.plus_file(file_name))
             file_name = dir.get_next()
+
+func recursive_folder_delete(path: String):
+    var dir = Directory.new()
+    if dir.open(path) == OK:
+        dir.list_dir_begin()
+        var file_name = dir.get_next()
+        while file_name != "":
+            if file_name != "." and file_name != "..":
+                if dir.current_is_dir():
+                    recursive_folder_delete(path.plus_file(file_name))
+                else:
+                    dir.remove(file_name)
+            file_name = dir.get_next()
+    dir.remove("")
 
 func _assert(condition: bool, message: String):
     if !condition:
