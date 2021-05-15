@@ -127,7 +127,7 @@ func patch_symbol(symbol_patch, id):
         mod_symbol.sfx_redirects = sfx_redirects
     
     if mod_symbol != null:
-        var name := symbol_patch.patch_name(mod_symbol.name)
+        var name := symbol_patch.patch_name()
         mod_symbol.name = name
         if name is String:
             add_translation(id, name)
@@ -135,7 +135,10 @@ func patch_symbol(symbol_patch, id):
             for locale in name.keys():
                 add_translation(id, name[locale], locale)
     else:
-        var name := symbol_patch.patch_name(TranslationServer.translate(id))
+        var name := TranslationServer.translate(id)
+        if name == id:
+            name = ""
+        name = symbol_patch.patch_name(name)
         add_translation(id, name, TranslationServer.get_locale())
 
     if mod_symbol != null:
@@ -147,11 +150,13 @@ func patch_symbol(symbol_patch, id):
             for locale in description.keys():
                 add_translation(id + "_desc", description[locale], locale)
     else:
-        var description := symbol_patch.patch_description(TranslationServer.translate(id + "_desc"))
+        var description := TranslationServer.translate(id + "_desc")
+        if description == id + "_desc":
+            description = ""
+        description = symbol_patch.patch_description(description)
         add_translation(id + "_desc", description, TranslationServer.get_locale())
 
 func add_translation(key: String, value: String, locale := "en"):
-    TranslationServer.translate("test")
     var translation := translations[locale]
     if translation == null:
         translation = Translation.new()
@@ -161,6 +166,17 @@ func add_translation(key: String, value: String, locale := "en"):
     
     translation.add_message(key, value)
 
+
+func translate(key: String):
+    var locale := TranslationServer.get_locale()
+    if translations.has(locale):
+        var translation := translations[locale]
+        var messages = translation.get_message_list()
+        for check_key in messages:
+            if key == check_key:
+                return translation.get_message(key)
+    
+    return TranslationServer.translate(key)
 
 func match_value(value: String, match_against):
     if match_against is String:
@@ -280,6 +296,8 @@ func patch_preload():
     _assert(packer.pck_start("user://_luckyapi_patched/preload.pck") == OK, "Opening preload.pck for writing failed!")
     patch("res://Main.tscn", ["res://modloader/patches/Main.gd", "res://modloader/patches/Title.gd"], ["Main", "Title"], packer)
     patch("res://Slot Icon.tscn", ["res://modloader/patches/SlotIcon.gd"], ["Slot Icon"], packer)
+    patch("res://Tooltip.tscn", ["res://modloader/patches/Tooltip_Card.gd"], ["Card"], packer)
+    patch("res://Card.tscn", ["res://modloader/patches/Card.gd"], ["Card"], packer)
 
     _assert(packer.flush(true) == OK, "Failed to write to preload.pck")
     
@@ -308,13 +326,12 @@ func load_mods():
             if _dir.current_is_dir():
                 print("LuckyAPI MODLOADER > Mod found: " + found_name)
                 load_folder(mods_dir.plus_file(found_name), found_name, "mod_" + found_name)
-                var mod_name := found_name.trim_suffix(".zip")
-                var mod_script := load("res://" + mod_name + "/mod.gd")
+                var mod_script := load("res://" + found_name + "/mod.gd")
                 var mod := mod_script.new()
 
-                mods[mod_name] = mod
+                mods[found_name] = mod
                 mod_count += 1
-                print("LuckyAPI MODLOADER > Mod loaded: " + mod_name)
+                print("LuckyAPI MODLOADER > Mod loaded: " + found_name)
                                 
             found_name = _dir.get_next()
 
@@ -325,7 +342,7 @@ func load_mods():
             current_mod_name = mod_name
             mod.load(self, tree)
     
-    # recursive_folder_delete("user://_luckyapi_patched")
+    recursive_folder_delete("user://_luckyapi_patched")
     print("LuckyAPI MODLOADER > Loading mods complete!")
 
 static func extract_script(scene: PackedScene, node_name: String) -> GDScript:

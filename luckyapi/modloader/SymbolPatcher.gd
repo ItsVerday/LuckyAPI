@@ -44,12 +44,17 @@ func patch_sfx(sfx: Dictionary) -> Dictionary:
 func patch_sfx_redirects(sfx_redirects: Array) -> Array:
     return sfx_redirects
 
-# Currently, patching names and descriptions doesn't work. Will have to figure out a way to do so.
 func patch_name(name: String) -> String:
     return name
 
 func patch_description(description: String) -> String:
     return description
+
+func translation_join(a: String, b: String, delimeter := "  ") -> String:
+    if a.length() == 0:
+        return b
+    
+    return a + delimeter + b
 
 func modify_self_adjacency(myself, grid_position, currently_adjacent, symbol_grid):
     return currently_adjacent
