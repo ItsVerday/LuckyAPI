@@ -306,6 +306,8 @@ func patch_preload():
     _assert(ProjectSettings.load_resource_pack("user://_luckyapi_patched/preload.pck", true), "Failed to load patched code!")
     force_reload("res://Main.tscn")
     force_reload("res://Slot Icon.tscn")
+    force_reload("res://Tooltip.tscn")
+    force_reload("res://Card.tscn")
     
     print("LuckyAPI MODLOADER > Patching game code complete!")
 
@@ -341,8 +343,6 @@ func load_mods():
         if mod.has_method("load"):
             current_mod_name = mod_name
             mod.load(self, tree)
-    
-    recursive_folder_delete("user://_luckyapi_patched")
     print("LuckyAPI MODLOADER > Loading mods complete!")
 
 static func extract_script(scene: PackedScene, node_name: String) -> GDScript:

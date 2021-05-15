@@ -19,4 +19,4 @@ func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
         symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [{"a": "type", "b": "rainbow"}], "anim": "bounce", "anim_targets": [symbol, self.modloader.globals.reels.displayed_icons[i.grid_position.y][i.grid_position.x]], "value_to_change": "value_multiplier", "diff": values[0]})
     
-    symbol.add_effect({"comparisons": [{"a": "values", "value_num": 1, "rand": true}], "sfx_type": "transform", "value_to_change": "type", "diff": "thunder_cloud", "push_front": true})
+    symbol.add_effect({"comparisons": [{"a": "values", "value_num": 1, "rand": true}], "anim": "shake", "sfx_type": "transform", "value_to_change": "type", "diff": "thunder_cloud", "push_front": true})
