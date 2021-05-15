@@ -3,11 +3,15 @@ extends Reference
 var modloader: Reference
 var id: String
 
+var modifies_self_adjacency := false
+var modifies_adjacent_adjacency := false
+var modifies_global_adjacency := false
+
 func init(modloader: Reference, params):
     self.modloader = modloader
     print("No initialization behavior for symbol patch defined in " + self.get_script().get_path())
 
-func patch_value(value: int) -> int:
+func patch_value(value: float) -> float:
     return value
 
 func patch_values(values: Array) -> Array:
@@ -19,10 +23,10 @@ func patch_rarity(rarity: String) -> String:
 func patch_groups(groups: Array) -> Array:
     return groups
 
-func patch_texture(texture: ImageTexture) -> ImageTexture:
+func patch_texture(texture: Texture) -> Texture:
     return texture
 
-func load_texture(path: String) -> ImageTexture:
+func load_texture(path: String) -> Texture:
     var image := Image.new()
     var err := image.load(path)
     _assert(err == OK, "Texture named " + id + " failed to load!")
@@ -47,9 +51,14 @@ func patch_name(name: String) -> String:
 func patch_description(description: String) -> String:
     return description
 
-func add_conditional_effects(symbol, adjacent):
-    pass
+func modify_self_adjacency(myself, grid_position, currently_adjacent, symbol_grid):
+    return currently_adjacent
 
+func modify_adjacent_adjacency(myself, my_grid_position, to_modify, to_modify_grid_position, currently_adjacent, symbol_grid):
+    return currently_adjacent
+
+func modify_global_adjacency(myself, my_grid_position, to_modify, to_modify_grid_position, currently_adjacent, symbol_grid):
+    return currently_adjacent
 
 func _assert(condition: bool, message: String):
     if !condition:

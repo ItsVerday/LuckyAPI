@@ -1,4 +1,4 @@
-extends "res://modloader/SymbolPatch.gd"
+extends "res://modloader/SymbolPatcher.gd"
 
 func init(modloader: Reference, params):
     self.modloader = modloader

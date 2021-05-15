@@ -3,6 +3,7 @@ extends Reference
 var tree: SceneTree
 const Utils = preload("res://modloader/utils.gd")
 const ModSymbol = preload("res://modloader/ModSymbol.gd")
+const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.1.0"
 const expected_version := "v0.6.3"
@@ -106,7 +107,7 @@ func patch_symbol(symbol_patch, id):
     database_entry.groups = groups
     if mod_symbol != null:
         mod_symbol.groups = groups
-
+    
     var texture := symbol_patch.patch_texture(databases.icon_texture_database[id])
     databases.icon_texture_database[id] = texture
     if mod_symbol != null:
@@ -150,6 +151,7 @@ func patch_symbol(symbol_patch, id):
         add_translation(id + "_desc", description, TranslationServer.get_locale())
 
 func add_translation(key: String, value: String, locale := "en"):
+    TranslationServer.translate("test")
     var translation := translations[locale]
     if translation == null:
         translation = Translation.new()
@@ -323,9 +325,8 @@ func load_mods():
             current_mod_name = mod_name
             mod.load(self, tree)
     
-    recursive_folder_delete("user://_luckyapi_patched")
+    # recursive_folder_delete("user://_luckyapi_patched")
     print("LuckyAPI MODLOADER > Loading mods complete!")
-
 
 static func extract_script(scene: PackedScene, node_name: String) -> GDScript:
     var state: SceneState = scene.get_state()

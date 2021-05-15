@@ -95,9 +95,14 @@ func get_adjacent_icons():
     var grid_position := self.grid_position
     var adjacent := .get_adjacent_icons()
     var symbol_grid := self.reels.displayed_icons
+    var patches := modloader.symbol_patches
 
     if mod_symbol != null and mod_symbol.modifies_self_adjacency:
         adjacent = mod_symbol.modify_self_adjacency(self, grid_position, adjacent, symbol_grid)
+    if patches.has(self.type):
+        for patch in patches[self.type]:
+            if patch.modifies_self_adjacency:
+                adjacent = patch.modify_self_adjacency(self, grid_position, adjacent, symbol_grid)
     
     var check_modifies_adjacent_adjacency := []
     for symbol in adjacent:
@@ -106,11 +111,19 @@ func get_adjacent_icons():
     for symbol in check_modifies_adjacent_adjacency:
         if symbol.mod_symbol != null and symbol.mod_symbol.modifies_adjacent_adjacency:
             adjacent = symbol.mod_symbol.modify_adjacent_adjacency(self, grid_position, symbol, symbol.grid_position, adjacent, symbol_grid)
+        if patches.has(symbol.type):
+            for patch in patches[symbol.type]:
+                if patch.modifies_adjacent_adjacency:
+                    adjacent = patch.modify_adjacent_adjacency(self, grid_position, symbol, symbol.grid_position, adjacent, symbol_grid)
     
     for row in symbol_grid:
         for symbol in row:
             if symbol.mod_symbol != null and symbol.mod_symbol.modifies_global_adjacency:
                 adjacent = symbol.mod_symbol.modify_global_adjacency(self, grid_position, symbol, symbol.grid_position, adjacent, symbol_grid)
+            if patches.has(symbol.type):
+                for patch in patches[symbol.type]:
+                    if patch.modifies_global_adjacency:
+                        adjacent = patch.modify_global_adjacency(self, grid_position, symbol, symbol.grid_position, adjacent, symbol_grid)
     
     adjacent.erase(self)
     return adjacent
@@ -128,6 +141,19 @@ func update_value_text():
     else:
         .update_value_text()
 
+    var patches := modloader.symbol_patches[self.type]
+    if patches != null:
+        for patch in patches:
+            if patch.has_method("update_value_text"):
+                patch.update_value_text(self, self.values)
+                if self.value_text > 0 and not destroyed:
+                    get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
+                    get_child(1).force_update = true
+                    displayed_text_value = str(self.value_text)
+                else:
+                    get_child(1).raw_string = ""
+                    displayed_text_value = ""
+
 func add_conditional_effects():
     var adj_icons := self.get_adjacent_icons()
     if mod_symbol != null:
@@ -139,4 +165,5 @@ func add_conditional_effects():
     var patches := modloader.symbol_patches[self.type]
     if patches != null:
         for patch in patches:
-            patch.add_conditional_effects(self, adj_icons)
+            if patch.has_method("add_conditional_effects"):
+                patch.add_conditional_effects(self, adj_icons)
