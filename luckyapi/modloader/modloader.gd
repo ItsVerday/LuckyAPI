@@ -1,7 +1,6 @@
-extends Reference
+extends "res://modloader/utils.gd"
 
 var tree: SceneTree
-const Utils = preload("res://modloader/utils.gd")
 const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
@@ -77,6 +76,7 @@ func add_symbol_patch(path: String, params := {}):
     if not symbol_patches.has(id):
         symbol_patches[id] = []
     symbol_patches[id].push_back(symbol_patch)
+    symbol_patches.mod_name = current_mod_name
 
     if databases.tile_database.has(id):
         patch_symbol(symbol_patch, id)
@@ -156,126 +156,10 @@ func patch_symbol(symbol_patch, id):
         description = symbol_patch.patch_description(description)
         add_translation(id + "_desc", description, TranslationServer.get_locale())
 
-func add_translation(key: String, value: String, locale := "en"):
-    var translation := translations[locale]
-    if translation == null:
-        translation = Translation.new()
-        translation.locale = locale
-        TranslationServer.add_translation(translation)
-        translations[locale] = translation
-    
-    translation.add_message(key, value)
-
-
-func translate(key: String):
-    var locale := TranslationServer.get_locale()
-    if translations.has(locale):
-        var translation := translations[locale]
-        var messages = translation.get_message_list()
-        for check_key in messages:
-            if key == check_key:
-                return translation.get_message(key)
-    
-    return TranslationServer.translate(key)
-
-func match_value(value: String, match_against):
-    if match_against is String:
-        if match_against == "*":
-            return true
-        
-        return value == match_against
-    elif match_against is Array:
-        for element in match_against:
-            if match_value(value, element):
-                return true
-        
-        return false
-    
-    return false
-
-func get_symbol_list(group := "*", rarity := "*"):
-    var symbols := []
-    for symbol in databases.tile_database:
-        var group_match := false
-
-        for symbol_group in symbol.groups:
-            if match_value(symbol_group, group):
-                group_match = true
-                break
-        
-        if not group_match:
-            continue
-        
-        if match_value(symbol.rarity, rarity):
-            symbols.add(symbol.type)
-    
-    return symbols
-
-func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
-    var symbol_list := get_symbol_list(group, rarity)
-
-    if symbol_list.size() == 0:
-        return null
-    
-    if ignore_rarity:
-        randomize()
-        return symbol_list[floor(rand_range(0, symbol_list.size()))]
-    
-    var possible_symbol_counts := { "common": 0, "uncommon": 0, "rare": 0, "very_rare": 0 }
-    for symbol in symbol_list:
-        if $"/root/Main".rarity_database["symbols"]["common"].has(symbol):
-            possible_symbol_counts["common"] += 1
-        elif $"/root/Main".rarity_database["symbols"]["uncommon"].has(symbol):
-            possible_symbol_counts["uncommon"] += 1
-        elif $"/root/Main".rarity_database["symbols"]["rare"].has(symbol):
-            possible_symbol_counts["rare"] += 1
-        elif $"/root/Main".rarity_database["symbols"]["very_rare"].has(symbol):
-            possible_symbol_counts["very_rare"] += 1
-
-    var rarity_chances := $"/root/Main/".rarity_chances["symbols"].duplicate(true)
-    rarity_chances.uncommon *= globals.pop_up.rarity_bonuses.symbols.uncommon
-    if (possible_symbol_counts.uncommon == 0):
-        rarity_chances.uncommon = 0
-
-    rarity_chances.rare *= globals.pop_up.rarity_bonuses.symbols.rare
-    if (possible_symbol_counts.rare == 0):
-        rarity_chances.rare = 0
-
-    rarity_chances.very_rare *= globals.pop_up.rarity_bonuses.symbols.very_rare
-    if (possible_symbol_counts.very_rare == 0):
-        rarity_chances.very_rare = 0
-
-    var picked_rarity := ""
-    randomize()
-    var rarity_picker := rand_range(0, 1)
-    if rarity_picker < rarity_chances.very_rare:
-        picked_rarity = "very_rare"
-    else:
-        rarity_picker -= rarity_chances.very_rare
-    
-    if rarity_picker < rarity_chances.rare and rarity == "":
-        picked_rarity = "rare"
-    else:
-        rarity_picker -= rarity_chances.rare
-    
-    if rarity_picker < rarity_chances.uncommon and rarity == "":
-        picked_rarity = "uncommon"
-    
-    if rarity == "":
-        picked_rarity = "common"
-
-    var possible_symbols := []
-    for symbol in symbol_list:
-        if databases.rarity_database.symbols[picked_rarity].has(symbol):
-            possible_symbols.push_back(symbol)
-    
-    randomize()
-    return possible_symbols[floor(rand_range(0, possible_symbols.size()))]
-
 
 func before_start():
     print("LuckyAPI MODLOADER > Initializing LuckyAPI " + modloader_version + "...")
-    Utils.ensure_dir_exists("user://_luckyapi_patched")
+    ensure_dir_exists("user://_luckyapi_patched")
 
     var main_script := extract_script(load("res://Main.tscn"), "Main").source_code
     var regex := RegEx.new()
@@ -344,93 +228,3 @@ func load_mods():
             current_mod_name = mod_name
             mod.load(self, tree)
     print("LuckyAPI MODLOADER > Loading mods complete!")
-
-static func extract_script(scene: PackedScene, node_name: String) -> GDScript:
-    var state: SceneState = scene.get_state()
-    
-    var node_idx := -1
-    var node_count := state.get_node_count()
-    for i in node_count:
-        if state.get_node_name(i) == node_name:
-            node_idx = i
-            break
-    _assert(node_idx != -1, "Node not found while extracting script from packed scene!")
-    
-    var extracted_script: GDScript = null
-    var property_count := state.get_node_property_count(node_idx)
-    for i in property_count:
-        if state.get_node_property_name(node_idx, i) == "script":
-            extracted_script = state.get_node_property_value(node_idx, i)
-            break
-    _assert(extracted_script is GDScript, "Extracted script is not GDScript!")
-    _assert(extracted_script.has_source_code(), "Extracted script does not have source code!")
-    
-    return extracted_script
-
-func patch(target_path: String, new_script_path: Array, node_name: Array, packer: PCKPacker):
-    var scene := load(target_path)
-    for i in range(new_script_path.size()):
-        replace_script_and_pack_original(packer, scene, node_name[i], new_script_path[i])
-    save_and_pack_resource(packer, scene, target_path)
-
-func replace_script_and_pack_original(packer: PCKPacker, scene: PackedScene, node_name: String, new_script_path: String):
-    var script := extract_script(scene, node_name)
-    var old_script := script.duplicate()
-    script.source_code = Utils.read_text(new_script_path)
-    save_and_pack_resource(packer, old_script, scene.resource_path.get_basename() + "_" + node_name + ".gd")
-
-func save_and_pack_resource(packer: PCKPacker, res: Resource, target_path: String):
-    var save_path := "user://_luckyapi_patched/" + target_path.trim_prefix("res://").replace("/", "_").replace("\\", "_")
-    _assert(ResourceSaver.save(save_path, res) == OK, "Failed to save resource to " + save_path + "!")
-    _assert(packer.add_file(target_path, save_path) == OK, "Failed to pack resource to " + target_path + "!")
-
-func force_reload(resource_path: String):
-    var new := ResourceLoader.load(resource_path, "", true)
-    new.take_over_path(resource_path)
-
-func load_folder(path: String, folder: String, name := "content.pck"):
-    var exe_dir := OS.get_executable_path().get_base_dir()
-    var pck_file := exe_dir.plus_file("luckyapi").plus_file("content.pck")
-
-    var packer := PCKPacker.new()
-    _assert(packer.pck_start(pck_file) == OK, "Opening " + name + " for writing failed!")
-    recursive_pack(packer, path, "res://".plus_file(folder))
-    _assert(packer.flush(true) == OK, "Failed to write to " + name + "!")
-    _assert(ProjectSettings.load_resource_pack(pck_file, true), "Failed to load " + name + "!")
-
-func recursive_pack(packer: PCKPacker, path: String, packer_path: String):
-    var dir := Directory.new()
-    if dir.open(path) == OK:
-        dir.list_dir_begin()
-        var file_name = dir.get_next()
-        while file_name != "":
-            if file_name != "." and file_name != "..":
-                if dir.current_is_dir():
-                    recursive_pack(packer, path.plus_file(file_name), packer_path.plus_file(file_name))
-                else:
-                    packer.add_file(packer_path.plus_file(file_name), path.plus_file(file_name))
-            file_name = dir.get_next()
-
-func recursive_folder_delete(path: String):
-    var dir = Directory.new()
-    if dir.open(path) == OK:
-        dir.list_dir_begin()
-        var file_name = dir.get_next()
-        while file_name != "":
-            if file_name != "." and file_name != "..":
-                if dir.current_is_dir():
-                    recursive_folder_delete(path.plus_file(file_name))
-                else:
-                    dir.remove(file_name)
-            file_name = dir.get_next()
-    dir.remove("")
-
-func _assert(condition: bool, message: String):
-    if !condition:
-        _halt(message)
-
-func _halt(message: String):
-    push_error("LuckyAPI MODLOADER > Runtime Error: " + message)
-
-    var n = null
-    n.fail_runtime_check()

@@ -1,7 +1,8 @@
-extends Reference
+extends "res://modloader/utils.gd"
 
 var modloader: Reference
 var id: String
+var mod_name: String
 
 var modifies_self_adjacency := false
 var modifies_adjacent_adjacency := false
@@ -26,15 +27,6 @@ func patch_groups(groups: Array) -> Array:
 func patch_texture(texture: Texture) -> Texture:
     return texture
 
-func load_texture(path: String) -> Texture:
-    var image := Image.new()
-    var err := image.load(path)
-    _assert(err == OK, "Texture named " + id + " failed to load!")
-    var texture := ImageTexture.new()
-    texture.create_from_image(image, 0)
-
-    return texture
-
 func patch_extra_textures(extra_textures: Dictionary) -> Dictionary:
     return extra_textures
 
@@ -50,12 +42,6 @@ func patch_name(name: String) -> String:
 func patch_description(description: String) -> String:
     return description
 
-func translation_join(a: String, b: String, delimeter := "  ") -> String:
-    if a.length() == 0:
-        return b
-    
-    return a + delimeter + b
-
 func modify_self_adjacency(myself, grid_position, currently_adjacent, symbol_grid):
     return currently_adjacent
 
@@ -64,13 +50,3 @@ func modify_adjacent_adjacency(myself, my_grid_position, to_modify, to_modify_gr
 
 func modify_global_adjacency(myself, my_grid_position, to_modify, to_modify_grid_position, currently_adjacent, symbol_grid):
     return currently_adjacent
-
-func _assert(condition: bool, message: String):
-    if !condition:
-        _halt(message)
-
-func _halt(message: String):
-    push_error("LuckyAPI MODLOADER > Runtime Error: " + message)
-
-    var n = null
-    n.fail_runtime_check()

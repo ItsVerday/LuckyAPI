@@ -57,7 +57,7 @@ func play_sfx(symbol, sfx_type):
         if sfx_directory == "":
             sfx = load("res://sfx/%s.wav" % (str(sfx_string)))
         else:
-            sfx = _load_wav("res://" + sfx_directory + "sfx/%s.wav" % (str(sfx_string)))
+            sfx = modloader.load_wav("res://" + sfx_directory + "sfx/%s.wav" % (str(sfx_string)))
     else:
         symbol_type = sfx_redirect.old_symbol
         var new_sfx_type := sfx_redirect.old_sfx
@@ -76,20 +76,6 @@ func play_sfx(symbol, sfx_type):
         player.volume_db = $"/root/Main/Options Sprite/Options".sfx.goal_volume
         if player.volume_db > -80 and not ($"/root/Main/Options Sprite/Options".mute_while_in_background and not $"/root/Main".window_focus):
             player.play()
-
-func _load_wav(path):
-    var file = File.new()
-    file.open(path, File.READ)
-    var buffer = file.get_buffer(file.get_len())
-    file.close()
-    
-    var stream = AudioStreamSample.new()
-    stream.format = AudioStreamSample.FORMAT_16_BITS
-    stream.data = buffer
-    stream.mix_rate = 44100
-    stream.stereo = true
-    
-    return stream
 
 func get_adjacent_icons():
     var grid_position := self.grid_position

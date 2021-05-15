@@ -1,4 +1,4 @@
-extends Reference
+extends "res://modloader/utils.gd"
 
 var modloader: Reference
 
@@ -23,15 +23,6 @@ func init(modloader: Reference, params):
     self.modloader = modloader
     print("No initialization behavior for custom symbol defined in " + self.get_script().get_path())
 
-func load_texture(path: String) -> ImageTexture:
-    var image := Image.new()
-    var err := image.load(path)
-    _assert(err == OK, "Texture named " + id + " failed to load!")
-    var texture := ImageTexture.new()
-    texture.create_from_image(image, 0)
-
-    return texture
-
 func add_sfx_redirect(old_symbol: String, old_sfx := "default", new_sfx := "default"):
     sfx_redirects.push_back({
         "old_symbol": old_symbol,
@@ -53,20 +44,3 @@ func update_value_text(symbol, values):
 
 func add_conditional_effects(adjacent):
     pass
-
-func add_symbol(type):
-    modloader.globals.reels.symbol_queue.push_back(type)
-
-func add_item(type):
-    modloader.globals.items.add_item(type)
-
-
-func _assert(condition: bool, message: String):
-    if !condition:
-        _halt(message)
-
-func _halt(message: String):
-    push_error("LuckyAPI MODLOADER > Runtime Error: " + message)
-
-    var n = null
-    n.fail_runtime_check()
