@@ -11,6 +11,7 @@ var game_version: String = "<game version not determined yet>"
 var exe_dir := OS.get_executable_path().get_base_dir()
 
 var mods := {}
+var mod_info := {}
 var mod_count := 0
 var databases := {}
 var globals := {}
@@ -214,19 +215,29 @@ func load_mods():
                 load_folder(mods_dir.plus_file(found_name), found_name, "mod_" + found_name)
                 var mod_script := load("res://" + found_name + "/mod.gd")
                 var mod := mod_script.new()
+                var info := load_info("res://" + found_name + "/mod.json", found_name)
 
                 mods[found_name] = mod
+                mod_info[found_name] = info
                 mod_count += 1
                 print("LuckyAPI MODLOADER > Mod loaded: " + found_name)
                                 
             found_name = _dir.get_next()
-
+    
+    var load_order := []
+    for mod_id in mod_info.keys():
+        add_mod_to_load_order(mod_id, load_order)
+        for dependency in mod_info[mod_id].dependencies:
+            _assert(mods.has(dependency), "Mod " + mod_id + " requires a dependency which wasn't found: " + dependency + "!")
+    
     print("LuckyAPI MODLOADER > Running load method on mods...")
-    for mod_name in mods.keys():
+    for mod_name in load_order:
         var mod := mods[mod_name]
+        var info := mod_info[mod_name]
         if mod.has_method("load"):
             current_mod_name = mod_name
-            mod.load(self, tree)
+            mod.load(self, info, tree)
+        print("LuckyAPI MODLOADER > " + info.name + " " + info.version + " by " + get_names_list(info.authors) + " loaded!")
     print("LuckyAPI MODLOADER > Loading mods complete!")
 
 func translate(key: String):
@@ -239,3 +250,55 @@ func translate(key: String):
                 return translation.get_message(key)
     
     return TranslationServer.translate(key)
+
+func add_mod_to_load_order(mod_id: String, load_order: Array, tree := []):
+    _assert(tree.find(mod_id) == -1, "Circular 'load_after' for mods!")
+    if load_order.find(mod_id) != -1:
+        return
+
+    var new_tree := tree.duplicate()
+    new_tree.push_back(mod_id)
+
+    for load_after in mod_info[mod_id].load_after:
+        add_mod_to_load_order(load_after, load_order, new_tree)
+    
+    load_order.push_back(mod_id)
+
+func load_info(path: String, expected_id: String):
+    var json := read_json(path)
+    var mod_info := ModInfo.new()
+    _assert(json.id == expected_id, "JSON-defined ID for mod " + expected_id + " is not the same as the mod folder name (" + expected_id + ")!")
+    mod_info.id = json.id
+
+    if json.has("version"):
+        mod_info.version = "v" + json.version
+    
+    if json.has("authors"):
+        mod_info.authors = json.authors
+    elif json.has("author"):
+        mod_info.authors = [json.author]
+    
+    if json.has("name"):
+        mod_info.name = json.name
+    else:
+        mod_info.name = mod_info.id
+    
+    if json.has("description"):
+        mod_info.description = json.description
+    
+    if json.has("dependencies"):
+        mod_info.dependencies = json.dependencies
+    
+    if json.has("load-after"):
+        mod_info.load_after = json["load-after"]
+    
+    return mod_info
+
+class ModInfo:
+    var id := ""
+    var version := ""
+    var authors := []
+    var name := ""
+    var description := ""
+    var dependencies := []
+    var load_after := []

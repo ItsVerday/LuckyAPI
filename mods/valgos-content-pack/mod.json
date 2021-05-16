@@ -1,0 +1,9 @@
+{
+    "id": "valgos-content-pack",
+    "version": "1.0.0",
+    "authors": ["Valgo"],
+    "name": "Valgo's Content Pack",
+    "description": "Adds new symbols and items to Luck be a Landlord",
+    "dependencies": [],
+    "load-after": []
+}

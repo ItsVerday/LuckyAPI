@@ -19,7 +19,7 @@ func add_conditional_effects(symbol, adjacent):
         symbol.add_effect_for_symbol(i, effect().if_type("dragon").change_value_multiplier(values[0]).animate("circle", "default", [symbol, i]))
         symbol.add_effect_for_symbol(i, effect().if_type("dragonfruit").set_destroyed())
         symbol.add_effect_for_symbol(i, effect().if_destroyed().if_type("dragonfruit").set_target(symbol).add_permanent_bonus(values[1]).animate("shake", "default", [symbol, i]))
-
+    
 func update_value_text(symbol, values):
     symbol.value_text = symbol.permanent_bonus
     symbol.value_text_color = "<color_FBF236>"

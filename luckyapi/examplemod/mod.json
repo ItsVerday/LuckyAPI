@@ -1,0 +1,9 @@
+{
+    "id": "examplemod",
+    "version": "1.0.0",
+    "authors": ["Valgo"],
+    "name": "LuckyAPI Example Mod",
+    "description": "An example mod for LuckyAPI",
+    "dependencies": [],
+    "load-after": []
+}

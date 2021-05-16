@@ -35,6 +35,24 @@ func join(a: String, b: String, delimeter := " ") -> String:
     
     return a + delimeter + b
 
+func get_names_list(arr: Array):
+    if arr.size() == 1:
+        return arr[0]
+    elif arr.size() == 2:
+        return arr[0] + " and " + arr[1]
+    
+    var string := ""
+    var index := arr.size() - 1
+    for name in arr:
+        if index == 0:
+            string += "and "
+            string += name
+        if index > 0:
+            string += ", "
+        index -= 1
+    
+    return string
+
 func match_value(value: String, match_against):
     if match_against is String:
         if match_against == "*":

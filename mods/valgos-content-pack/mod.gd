@@ -1,8 +1,6 @@
 extends Reference
 
-func load(modloader: Reference, tree: SceneTree):
-    print("Loading Valgo's Content Pack...")
-
+func load(modloader: Reference, mod_info, tree: SceneTree):
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/Pineapple.gd")
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/BananaTree.gd")
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/CoconutTree.gd")
