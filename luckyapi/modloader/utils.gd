@@ -268,6 +268,7 @@ func _halt(message: String):
     var n = null
     n.fail_runtime_check()
 
+# Effect Builder API
 func effect():
     return SymbolEffect.new()
 
@@ -494,12 +495,11 @@ class SymbolEffect:
     func add_permanent_bonus(diff: int):
         return self.add_to_value("permanent_bonus", diff)
     
-    func animate(animation: String, sfx_type := "default", targets := null):
+    func animate(animation: String, sfx_type := "default", targets := []):
         effect_dictionary.anim = animation
         effect_dictionary.sfx_type = sfx_type
-        if targets != null:
+        if targets.size() > 0:
             effect_dictionary.anim_targets = targets
-    
         return self
     
     func set_target(target):
