@@ -228,3 +228,14 @@ func load_mods():
             current_mod_name = mod_name
             mod.load(self, tree)
     print("LuckyAPI MODLOADER > Loading mods complete!")
+
+func translate(key: String):
+    var locale := TranslationServer.get_locale()
+    if translations.has(locale):
+        var translation := translations[locale]
+        var messages = translation.get_message_list()
+        for check_key in messages:
+            if key == check_key:
+                return translation.get_message(key)
+    
+    return TranslationServer.translate(key)

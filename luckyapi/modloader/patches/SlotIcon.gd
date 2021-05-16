@@ -153,3 +153,18 @@ func add_conditional_effects():
         for patch in patches:
             if patch.has_method("add_conditional_effects"):
                 patch.add_conditional_effects(self, adj_icons)
+
+func add_effect(effect):
+    if effect.effect_dictionary != null:
+        .add_effect(effect.effect_dictionary)
+    else:
+        .add_effect(effect)
+
+func add_effect_to_symbol(y, x, effect):
+    if effect.effect_dictionary != null:
+        .add_effect_to_symbol(y, x, effect.effect_dictionary)
+    else:
+        .add_effect_to_symbol(y, x, effect)
+
+func add_effect_for_symbol(symbol, effect):
+    add_effect_to_symbol(symbol.grid_position.y, symbol.grid_position.x, effect)

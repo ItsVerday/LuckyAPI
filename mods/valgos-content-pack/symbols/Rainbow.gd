@@ -31,6 +31,6 @@ func add_conditional_effects(symbol, adjacent):
         for i in adjacent:
             if i.type == "empty":
                 continue
-            symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [], "value_to_change": "value_multiplier", "diff": values[0]})
+            symbol.add_effect_for_symbol(i, effect().change_value_multiplier(values[0]))
             animate.push_back(i)
-        symbol.add_effect({"comparisons": [], "anim": "circle", "anim_targets": animate})
+        symbol.add_effect(effect().animate("circle", "default", animate))

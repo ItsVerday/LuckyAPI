@@ -29,9 +29,6 @@ func translate(key: String):
     
     return TranslationServer.translate(key)
 
-func tr(key):
-    return translate(key)
-
 func join(a: String, b: String, delimeter := " ") -> String:
     if a.length() == 0:
         return b
@@ -270,3 +267,245 @@ func _halt(message: String):
 
     var n = null
     n.fail_runtime_check()
+
+func effect():
+    return SymbolEffect.new()
+
+class SymbolEffect:
+    var effect_dictionary := {"comparisons": [], "tiles_to_add": [], "items_to_add": []}
+    
+    func if_value_random(value_index: int):
+        effect_dictionary.comparisons.push_back({"a": "values", "value_num": value_index, "rand": true})
+        return self
+    
+    func if_value_at_least(value_index: int, compare: int):
+        effect_dictionary.comparisons.push_back({"a": "values", "value_num": value_index, "b": compare, "greater_than_eq": true})
+        return self
+    
+    func if_value_equals(value_index: int, compare: int):
+        effect_dictionary.comparisons.push_back({"a": "values", "value_num": value_index, "b": compare})
+        return self
+    
+    func if_final_value_less_than(compare: int):
+        effect_dictionary.comparisons.push_back({"a": "final_value", "b": compare, "less_than": true})
+        return self
+
+    func if_final_value_equals(compare: int):
+        effect_dictionary.comparisons.push_back({"a": "final_value", "b": compare})
+        return self
+    
+    func if_value_bonus_less_than(compare: int, currency := "coin"):
+        effect_dictionary.comparisons.push_back({"a": "value_bonus", "currency": currency, "b": compare, "less_than": true})
+        return self
+
+    func if_value_bonus_at_least(compare: int, currency := "coin"):
+        effect_dictionary.comparisons.push_back({"a": "value_bonus", "currency": currency, "b": compare, "greater_than_eq": true})
+        return self
+    
+    func if_value_bonus_equals(compare: int, currency := "coin"):
+        effect_dictionary.comparisons.push_back({"a": "value_bonus", "currency": currency, "b": compare})
+        return self
+
+    func if_value_multiplier_less_than(compare: float, currency := "coin"):
+        effect_dictionary.comparisons.push_back({"a": "value_multiplier", "currency": currency, "b": compare, "less_than": true})
+        return self
+
+    func if_value_multiplier_at_least(compare: float, currency := "coin"):
+        effect_dictionary.comparisons.push_back({"a": "value_multiplier", "currency": currency, "b": compare, "greater_than_eq": true})
+        return self
+    
+    func if_value_multiplier_equals(compare: float, currency := "coin"):
+        effect_dictionary.comparisons.push_back({"a": "value_multiplier", "currency": currency, "b": compare})
+        return self
+    
+    func if_type(type: String, not_prev := false):
+        if not_prev:
+            effect_dictionary.comparisons.push_back({"a": "type", "b": type, "not_prev": true})
+        else:
+            effect_dictionary.comparisons.push_back({"a": "type", "b": type})
+        
+        return self
+    
+    func if_group(group: String, not_prev := false):
+        if not_prev:
+            effect_dictionary.comparisons.push_back({"a": "groups", "b": group, "not_prev": true})
+        else:
+            effect_dictionary.comparisons.push_back({"a": "groups", "b": group})
+        
+        return self
+
+    func if_destroyed(compare := true, not_prev := false):
+        if not_prev:
+            effect_dictionary.comparisons.push_back({"a": "destroyed", "b": compare, "not_prev": true})
+        else:
+            effect_dictionary.comparisons.push_back({"a": "destroyed", "b": compare})
+        
+        return self
+    
+    func if_pointing_directions(compare):
+        effect_dictionary.comparisons.push_back({"a": "pointing_directions", "b": compare})
+        return self
+
+    func if_grid_x(compare):
+        effect_dictionary.comparisons.push_back({"a": "grid_position_x", "b": compare})
+        return self
+
+    func if_grid_y(compare):
+        effect_dictionary.comparisons.push_back({"a": "grid_position_y", "b": compare})
+        return self
+    
+    func if_has(property: String, value):
+        effect_dictionary.comparisons.push_back({"a": property, "b": value})
+        return self
+
+    func if_not_has(property: String, value):
+        effect_dictionary.comparisons.push_back({"a": property, "b": value, "not_have": true})
+        return self
+
+    func if_property_random(property: String):
+        effect_dictionary.comparisons.push_back({"rand": true, "a": property})
+        return self
+
+    func if_property_less_than(property: String, compare: int):
+        effect_dictionary.comparisons.push_back({"less_than": true, "a": property, "b": compare})
+        return self
+
+    func if_property_at_least(property: String, compare: int):
+        effect_dictionary.comparisons.push_back({"greater_than_eq": true, "a": property, "b": compare})
+        return self
+    
+    func if_property_equals(property: String, compare):
+        effect_dictionary.comparisons.push_back({"a": property, "b": compare})
+        return self
+    
+    
+    func unconditional():
+        effect_dictionary.unconditional = true
+        return self
+    
+    func add_symbol_type(type: String):
+        effect_dictionary.tiles_to_add.push_back({"type": type})
+        return self
+
+    func add_symbol_group(group: String, min_rarity := "common"):
+        effect_dictionary.tiles_to_add.push_back({"group": group, "min_rarity": min_rarity})
+        return self
+    
+    func add_item_type(type: String):
+        effect_dictionary.items_to_add.push_back({"type": type})
+        return self
+
+    func add_item_rarity(rarity: String):
+        effect_dictionary.items_to_add.push_back({"rarity": rarity})
+        return self
+    
+    func change_bonus_values(diff: int):
+        effect_dictionary.value_to_change = "bonus_values"
+        effect_dictionary.diff = diff
+        return self
+
+    func change_bonus_value_multipliers(diff: int):
+        effect_dictionary.value_to_change = "bonus_value_multipliers"
+        effect_dictionary.diff = diff
+        return self
+
+    func change_value_bonus(diff: int, currency := "coin", overwrite := false, giver := null):
+        effect_dictionary.value_to_change = "value_bonus"
+        effect_dictionary.diff = diff
+        effect_dictionary.currency = currency
+        if overwrite:
+            effect_dictionary.overwrite = true
+        if giver != null:
+            effect_dictionary.giver = giver
+        
+        return self
+
+    func change_value_multiplier(diff: int, currency := "coin", overwrite := false, giver := null):
+        effect_dictionary.value_to_change = "value_multiplier"
+        effect_dictionary.diff = diff
+        effect_dictionary.currency = currency
+        if overwrite:
+            effect_dictionary.overwrite = true
+        if giver != null:
+            effect_dictionary.giver = giver
+        
+        return self
+
+    func change_flat_value_bonus(diff: int):
+        effect_dictionary.value_to_change = "flat_value_bonus"
+        effect_dictionary.diff = diff
+        return self
+
+    func multiply_value(property: String, diff: int):
+        effect_dictionary.value_to_change = property
+        effect_dictionary.diff = diff
+        effect_dictionary.multiply = true
+        return self
+    
+    func change_type(type: String):
+        effect_dictionary.value_to_change = "type"
+        effect_dictionary.diff = type
+        effect_dictionary.push_front = true
+        return self
+    
+    func change_group(group: String, min_rarity := "common"):
+        effect_dictionary.value_to_change = "type"
+        effect_dictionary.group = group
+        effect_dictionary.min_rarity = min_rarity
+        return self
+
+    func add_to_array(property: String, diff):
+        effect_dictionary.add_to_array = true
+        effect_dictionary.value_to_change = property
+        effect_dictionary.diff = diff
+        return self
+    
+    func set_destroyed(destroyed := true, overwrite_prev_data := false):
+        effect_dictionary.value_to_change = "destroyed"
+        effect_dictionary.diff = destroyed
+        return self
+
+    func set_drained(drained := true):
+        effect_dictionary.value_to_change = "drained"
+        effect_dictionary.diff = drained
+        return self
+    
+    func set_pointing_directions(directions: Array):
+        effect_dictionary.value_to_change = "pointing_directions"
+        effect_dictionary.diff = directions
+        return self
+    
+    func set_removed():
+        effect_dictionary.value_to_change = "removed"
+        effect_dictionary.diff = true
+        return self
+    
+    func set_value(property: String, diff: int):
+        effect_dictionary.value_to_change = property
+        effect_dictionary.diff = diff
+        effect_dictionary.overwrite = true
+        return self
+
+    func add_to_value(property: String, diff: int):
+        effect_dictionary.value_to_change = property
+        effect_dictionary.diff = diff
+        return self
+    
+    func add_permanent_bonus(diff: int):
+        return self.add_to_value("permanent_bonus", diff)
+    
+    func animate(animation: String, sfx_type := "default", targets := null):
+        effect_dictionary.anim = animation
+        effect_dictionary.sfx_type = sfx_type
+        if targets != null:
+            effect_dictionary.anim_targets = targets
+    
+        return self
+    
+    func set_target(target):
+        effect_dictionary.target = target
+        return self
+    
+    func set_giver(giver):
+        effect_dictionary.giver = giver
+        return self

@@ -19,10 +19,10 @@ func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
         if i.type == "empty":
             continue
-        symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [], "value_to_change": "value_multiplier", "diff": values[0]})
+        symbol.add_effect_for_symbol(i, effect().change_value_multiplier(values[0]))
         animate.push_back(i)
-    symbol.add_effect({"comparisons": [], "sfx_type": "default", "anim": "shake", "anim_targets": animate})
-    symbol.add_effect({"comparisons": [{"a": "times_displayed", "b": values[1], "greater_than_eq": true}], "anim": "shake", "value_to_change": "destroyed", "diff": true})
+    symbol.add_effect(effect().animate("shake", "default", animate))
+    symbol.add_effect(effect().if_property_at_least("times_displayed", values[1]).set_destroyed().animate("shake"))
 
 func update_value_text(symbol, values):
     symbol.value_text = values[1] - symbol.times_displayed

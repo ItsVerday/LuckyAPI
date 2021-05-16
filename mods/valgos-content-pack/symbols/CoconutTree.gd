@@ -4,8 +4,8 @@ func init(modloader: Reference, params):
     self.modloader = modloader
 
     self.id = "coconut_tree"
-    self.value = 3
-    self.values = [20]
+    self.value = 2
+    self.values = [30]
     self.rarity = "uncommon"
     self.groups = ["farmerlikes", "plant"]
     add_sfx_redirect("farmer")
@@ -15,4 +15,4 @@ func init(modloader: Reference, params):
     self.description = "Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <icon_coconut>."
 
 func add_conditional_effects(symbol, adjacent):
-    symbol.add_effect({"comparisons": [{"a": "values", "value_num": 0, "rand": true}], "anim": "bounce", "tiles_to_add": [{"type": "coconut"}]})
+    symbol.add_effect(effect().if_value_random(0).add_symbol_type("coconut").animate("bounce"))

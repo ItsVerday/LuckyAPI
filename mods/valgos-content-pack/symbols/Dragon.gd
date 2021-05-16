@@ -16,10 +16,9 @@ func init(modloader: Reference, params):
 
 func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
-        symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [{"a": "type", "b": "dragon"}], "anim": "circle", "anim_targets": [symbol, self.modloader.globals.reels.displayed_icons[i.grid_position.y][i.grid_position.x]], "value_to_change": "value_multiplier", "diff": values[0]})
-
-        symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [{"a": "type", "b": "dragonfruit"}], "value_to_change": "destroyed", "diff": true})
-        symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [{"a": "destroyed", "b": true}, {"a": "type", "b": "dragonfruit"}], "anim": "shake", "anim_targets": [symbol, self.modloader.globals.reels.displayed_icons[i.grid_position.y][i.grid_position.x]], "target": symbol, "value_to_change": "permanent_bonus", "diff": values[1]})
+        symbol.add_effect_for_symbol(i, effect().if_type("dragon").change_value_multiplier(values[0]).animate("circle", "default", [symbol, i]))
+        symbol.add_effect_for_symbol(i, effect().if_type("dragonfruit").set_destroyed())
+        symbol.add_effect_for_symbol(i, effect().if_destroyed().if_type("dragonfruit").set_target(symbol).add_permanent_bonus(values[1]).animate("shake", "default", [symbol, i]))
 
 func update_value_text(symbol, values):
     symbol.value_text = symbol.permanent_bonus

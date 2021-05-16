@@ -16,7 +16,4 @@ func init(modloader: Reference, params):
     self.description = "A test symbol used to test LuckyAPI."
 
 func add_conditional_effects(symbol, adjacent):
-    var symbol_arr := []
-    for i in range(self.values[0]):
-        symbol_arr.push_back({"type": "king_midas"})
-    symbol.add_effect({"comparisons": [], "anim": "shake", "tiles_to_add": symbol_arr})
+    symbol.add_effect(effect().add_symbol_type("king_midas").animate("shake"))

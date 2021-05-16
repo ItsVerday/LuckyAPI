@@ -4,7 +4,7 @@ func init(modloader: Reference, params):
     self.modloader = modloader
 
     self.id = "banana_tree"
-    self.value = 3
+    self.value = 2
     self.values = [30]
     self.rarity = "uncommon"
     self.groups = ["farmerlikes", "plant"]
@@ -15,4 +15,4 @@ func init(modloader: Reference, params):
     self.description = "Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <icon_banana>."
 
 func add_conditional_effects(symbol, adjacent):
-    symbol.add_effect({"comparisons": [{"a": "values", "value_num": 0, "rand": true}], "anim": "bounce", "tiles_to_add": [{"type": "banana"}]})
+    symbol.add_effect(effect().if_value_random(0).add_symbol_type("banana").animate("bounce"))

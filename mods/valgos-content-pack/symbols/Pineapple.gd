@@ -16,4 +16,4 @@ func init(modloader: Reference, params):
 
 func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
-        symbol.add_effect_to_symbol(i.grid_position.y, i.grid_position.x, {"comparisons": [{"a": "groups", "b": "fruit"}], "anim": "bounce", "anim_targets": [symbol, self.modloader.globals.reels.displayed_icons[i.grid_position.y][i.grid_position.x]], "value_to_change": "value_bonus", "diff": values[0]})
+        symbol.add_effect_for_symbol(i, effect().if_group("fruit").change_value_bonus(values[0]).animate("bounce", "default", [symbol, i]))
