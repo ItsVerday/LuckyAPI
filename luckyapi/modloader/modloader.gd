@@ -161,6 +161,7 @@ func patch_symbol(symbol_patch, id):
 func before_start():
     print("LuckyAPI MODLOADER > Initializing LuckyAPI " + modloader_version + "...")
     ensure_dir_exists("user://_luckyapi_patched")
+    ensure_dir_exists("user://mods")
 
     var main_script := extract_script(load("res://Main.tscn"), "Main").source_code
     var regex := RegEx.new()
