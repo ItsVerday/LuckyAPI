@@ -7,7 +7,7 @@ LuckyAPI is heavily based on a [Luckloader](https://github.com/FeldrinH/Luckload
 Detailed installation instructions are on the GitHub Wiki for this repository, at [https://github.com/ValgoBoi/LuckyAPI/wiki/Installation](https://github.com/ValgoBoi/LuckyAPI/wiki/Installation)!
 
 # Mod installation
-Mods are folders containing the mod's code and assets. Mods are placed in the `mods` folder in your save directory. To get to this directory, launch the game and press `F8`. This will take you to your run logs folder. Go one back in the file explorer, until you see a folder with the `LBAL.save` file in it. Create a new folder called `mods`, and place any mods in this folder. If you download a mod as a `.zip` file, you must unzip it for the mod to load. Once you launch the game again, the mods will be loaded into your game!
+Detailed installation instructions for mods are on the GitHub Wiki for this repository, at [https://github.com/ValgoBoi/LuckyAPI/wiki/Mod-Installation](https://github.com/ValgoBoi/LuckyAPI/wiki/Mod-Installation)!
 
 # Example mod
 There is a basic example mod in the `luckyapi` folder. It can be installed like any other mod. The mod is very primitive, as it was mostly used to test LuckyAPI. It doesn't do anything interesting.
