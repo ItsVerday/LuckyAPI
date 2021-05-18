@@ -5,7 +5,7 @@ func init(modloader: Reference, params):
 
     self.id = "lightning_bolt"
     self.value = 2
-    self.values = [1.5, 3]
+    self.values = [2, 3]
     self.rarity = "rare"
     self.groups = []
     add_sfx_redirect("sun", "default", "default")

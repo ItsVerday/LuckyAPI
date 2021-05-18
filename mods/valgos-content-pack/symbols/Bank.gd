@@ -5,7 +5,7 @@ func init(modloader: Reference, params):
 
     self.id = "bank"
     self.value = 1
-    self.values = [5, 5, 1]
+    self.values = [5, 4, 1]
     self.rarity = "uncommon"
     self.groups = []
     add_sfx_redirect("oyster", "default", "spawn")

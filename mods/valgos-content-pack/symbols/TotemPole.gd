@@ -17,4 +17,4 @@ func init(modloader: Reference, params):
 func add_conditional_effects(symbol, adjacent):
     for y in range(modloader.globals.reels.reel_height):
         if y != symbol.grid_position.y:
-            symbol.add_effect_to_symbol(y, symbol.grid_position.x, effect().if_type("totem_pole").change_value_multiplier(values[0]))
+            symbol.add_effect_to_symbol(y, symbol.grid_position.x, effect().if_type("totem_pole").change_value_bonus(values[0]))

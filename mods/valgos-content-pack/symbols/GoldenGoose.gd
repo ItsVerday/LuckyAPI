@@ -5,7 +5,7 @@ func init(modloader: Reference, params):
 
     self.id = "golden_goose"
     self.value = 4
-    self.values = [50, 3]
+    self.values = [20, 3]
     self.rarity = "very_rare"
     self.groups = ["organism", "animal", "bird"]
     add_sfx_redirect("goose")
@@ -18,4 +18,4 @@ func init(modloader: Reference, params):
 func add_conditional_effects(symbol, adjacent):
     symbol.add_effect(effect().if_value_random(0).add_symbol_type("golden_egg").animate("shake"))
     for i in adjacent:
-        symbol.add_effect_for_symbol(i, effect().is_type("golden_egg").change_value_multiplier(values[1]).animate("bounce", "boost", [symbol, i]))
+        symbol.add_effect_for_symbol(i, effect().if_type("golden_egg").change_value_multiplier(values[1]).animate("bounce", "boost", [symbol, i]))

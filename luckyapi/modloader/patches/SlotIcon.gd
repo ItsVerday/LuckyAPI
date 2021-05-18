@@ -11,8 +11,8 @@ func _ready():
     update_mod_symbol(self.type)
 
 func change_type(p_type: String, need_cond_effects: bool):
-    .change_type(p_type, need_cond_effects)
     update_mod_symbol(p_type)
+    .change_type(p_type, need_cond_effects)
     set_texture($"/root/Main".icon_texture_database[self.type])
 
 func update_mod_symbol(new_type: String):
@@ -23,6 +23,7 @@ func update_mod_symbol(new_type: String):
         mod_symbol = null
 
 func play_sfx(symbol, sfx_type):
+    symbol.update_mod_symbol(symbol.type)
     var player := symbol.sfx_player
     var sfx_total_num := 0
     var db := $"/root/Main".sfx_database["symbols"]

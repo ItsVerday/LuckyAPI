@@ -5,7 +5,7 @@ func init(modloader: Reference, params):
 
     self.id = "banana_tree"
     self.value = 2
-    self.values = [30]
+    self.values = [20]
     self.rarity = "uncommon"
     self.groups = ["farmerlikes", "plant"]
     add_sfx_redirect("farmer")

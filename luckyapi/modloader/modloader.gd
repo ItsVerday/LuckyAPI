@@ -5,7 +5,7 @@ const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.1.0"
-const expected_version := "v0.6.3"
+const expected_version := "v0.6.4"
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
@@ -77,7 +77,7 @@ func add_symbol_patch(path: String, params := {}):
     if not symbol_patches.has(id):
         symbol_patches[id] = []
     symbol_patches[id].push_back(symbol_patch)
-    symbol_patches.mod_name = current_mod_name
+    symbol_patch.mod_name = current_mod_name
 
     if databases.tile_database.has(id):
         patch_symbol(symbol_patch, id)

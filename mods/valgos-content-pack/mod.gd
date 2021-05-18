@@ -15,3 +15,5 @@ func load(modloader: Reference, mod_info, tree: SceneTree):
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/Dragonfruit.gd")
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/PotOfGold.gd")
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/LightningBolt.gd")
+
+    modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/GoldenEgg.gd")

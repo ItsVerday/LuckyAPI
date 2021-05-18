@@ -7,7 +7,7 @@ func init(modloader: Reference, params):
     self.value = 2
     self.values = [1]
     self.rarity = "uncommon"
-    self.groups = ["piratelikes", "farmerlikes", "fruitlikes", "monkeylikes", "plant", "food", "fruit"]
+    self.groups = ["farmerlikes", "fruitlikes", "monkeylikes", "plant", "food", "fruit"]
     add_sfx_redirect("mrs_fruit")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/pineapple.png")

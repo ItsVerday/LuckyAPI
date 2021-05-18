@@ -5,7 +5,7 @@ func init(modloader: Reference, params):
 
     self.id = "thunder_cloud"
     self.value = 3
-    self.values = [15, 20, 40]
+    self.values = [15, 25, 30]
     self.rarity = "rare"
     self.groups = []
     add_sfx_redirect("sun", "default", "transform")
