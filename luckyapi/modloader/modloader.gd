@@ -4,7 +4,7 @@ var tree: SceneTree
 const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
-const modloader_version := "v0.1.0"
+const modloader_version := "v0.2.0"
 const expected_versions := ["v0.6.3", "v0.6.4"]
 var game_version: String = "<game version not determined yet>"
 
@@ -12,6 +12,7 @@ var exe_dir := OS.get_executable_path().get_base_dir()
 
 var mods := {}
 var mod_info := {}
+var mod_load_order := []
 var mod_count := 0
 var databases := {}
 var globals := {}
@@ -24,11 +25,13 @@ func _init(tree: SceneTree):
     self.tree = tree
 
 func add_mod_symbol(path: String, params := {}):
-    var mod_symbol := load(path).new()
+    var script := load(path)
+    var mod_symbol := script.new()
     mod_symbol.init(self, params)
     var id := mod_symbol.id
     mod_symbols[id] = mod_symbol
     mod_symbol.mod_name = current_mod_name
+    _assert(script.get_base_script() == "res://modloader/ModSymbol.gd", "Mod symbol " + id + " does not extend ModSymbol.gd!")
 
     databases.icon_texture_database[id] = mod_symbol.texture
     for extra_texture_key in mod_symbol.extra_textures.keys():
@@ -71,13 +74,15 @@ func add_mod_symbol(path: String, params := {}):
     return mod_symbol
 
 func add_symbol_patch(path: String, params := {}):
-    var symbol_patch := load(path).new()
+    var script := load(path)
+    var symbol_patch := script.new()
     symbol_patch.init(self, params)
     var id := symbol_patch.id
     if not symbol_patches.has(id):
         symbol_patches[id] = []
     symbol_patches[id].push_back(symbol_patch)
     symbol_patch.mod_name = current_mod_name
+    _assert(script.get_base_script() == "res://modloader/SymbolPatcher.gd", "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
 
     if databases.tile_database.has(id):
         patch_symbol(symbol_patch, id)
@@ -225,14 +230,13 @@ func load_mods():
                                 
             found_name = _dir.get_next()
     
-    var load_order := []
     for mod_id in mod_info.keys():
-        add_mod_to_load_order(mod_id, load_order)
+        add_mod_to_load_order(mod_id, mod_load_order)
         for dependency in mod_info[mod_id].dependencies:
             _assert(mods.has(dependency), "Mod " + mod_id + " requires a dependency which wasn't found: " + dependency + "!")
     
     print("LuckyAPI MODLOADER > Running load method on mods...")
-    for mod_name in load_order:
+    for mod_name in mod_load_order:
         var mod := mods[mod_name]
         var info := mod_info[mod_name]
         if mod.has_method("load"):
@@ -264,42 +268,3 @@ func add_mod_to_load_order(mod_id: String, load_order: Array, tree := []):
         add_mod_to_load_order(load_after, load_order, new_tree)
     
     load_order.push_back(mod_id)
-
-func load_info(path: String, expected_id: String):
-    var json := read_json(path)
-    var mod_info := ModInfo.new()
-    _assert(json.id == expected_id, "JSON-defined ID for mod " + expected_id + " is not the same as the mod folder name (" + expected_id + ")!")
-    mod_info.id = json.id
-
-    if json.has("version"):
-        mod_info.version = "v" + json.version
-    
-    if json.has("authors"):
-        mod_info.authors = json.authors
-    elif json.has("author"):
-        mod_info.authors = [json.author]
-    
-    if json.has("name"):
-        mod_info.name = json.name
-    else:
-        mod_info.name = mod_info.id
-    
-    if json.has("description"):
-        mod_info.description = json.description
-    
-    if json.has("dependencies"):
-        mod_info.dependencies = json.dependencies
-    
-    if json.has("load-after"):
-        mod_info.load_after = json["load-after"]
-    
-    return mod_info
-
-class ModInfo:
-    var id := ""
-    var version := ""
-    var authors := []
-    var name := ""
-    var description := ""
-    var dependencies := []
-    var load_after := []

@@ -22,6 +22,16 @@ func update_mod_symbol(new_type: String):
     else:
         mod_symbol = null
 
+func start_animation(anim):
+    .start_animation(anim)
+
+    var animation_to_modify := self.queued_anims[0]
+    for mod_id in modloader.mod_load_order:
+        var mod := modloader.mods[mod_id]
+        if mod.has_method("modify_animation"):
+            animation_to_modify = mod.modify_animation(animation_to_modify)
+    self.queued_anims[0] = animation_to_modify
+
 func play_sfx(symbol, sfx_type):
     symbol.update_mod_symbol(symbol.type)
     var player := symbol.sfx_player

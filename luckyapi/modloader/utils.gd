@@ -286,6 +286,45 @@ func _halt(message: String):
     var n = null
     n.fail_runtime_check()
 
+func load_info(path: String, expected_id: String):
+    var json := read_json(path)
+    var mod_info := ModInfo.new()
+    _assert(json.id == expected_id, "JSON-defined ID for mod " + expected_id + " is not the same as the mod folder name (" + expected_id + ")!")
+    mod_info.id = json.id
+
+    if json.has("version"):
+        mod_info.version = "v" + json.version
+    
+    if json.has("authors"):
+        mod_info.authors = json.authors
+    elif json.has("author"):
+        mod_info.authors = [json.author]
+    
+    if json.has("name"):
+        mod_info.name = json.name
+    else:
+        mod_info.name = mod_info.id
+    
+    if json.has("description"):
+        mod_info.description = json.description
+    
+    if json.has("dependencies"):
+        mod_info.dependencies = json.dependencies
+    
+    if json.has("load-after"):
+        mod_info.load_after = json["load-after"]
+    
+    return mod_info
+
+class ModInfo:
+    var id := ""
+    var version := ""
+    var authors := []
+    var name := ""
+    var description := ""
+    var dependencies := []
+    var load_after := []
+
 # Effect Builder API
 func effect():
     return SymbolEffect.new()
