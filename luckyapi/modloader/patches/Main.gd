@@ -2,6 +2,8 @@ extends "res://Main_Main.gd"
 
 var modloader := null
 func _ready():
+    if self.save_string == "user://LBAL.save":
+        self.save_string = "user://LBAL-LuckyAPI.save"
     ._ready()
 
     modloader = get_tree().modloader
