@@ -222,9 +222,8 @@ func force_reload(resource_path: String):
     var new := ResourceLoader.load(resource_path, "", true)
     new.take_over_path(resource_path)
 
-func load_folder(path: String, folder: String, name := "content.pck"):
-    var exe_dir := OS.get_executable_path().get_base_dir()
-    var pck_file := exe_dir.plus_file("luckyapi").plus_file("content.pck")
+func load_folder(path: String, folder: String, name := "content"):
+    var pck_file := "user://_luckyapi_patched".plus_file(name + ".pck")
 
     var packer := PCKPacker.new()
     _assert(packer.pck_start(pck_file) == OK, "Opening " + name + " for writing failed!")
@@ -258,11 +257,6 @@ func recursive_folder_delete(path: String):
                     dir.remove(file_name)
             file_name = dir.get_next()
     dir.remove("")
-
-func ensure_dir_exists(dir_path: String):
-    var dir := Directory.new()
-    if !dir.dir_exists(dir_path):
-        _assert(dir.make_dir(dir_path) == OK, "Failed to create directory " + dir_path + "!")
 
 func read_text(file_path: String) -> String:
     var data_file := File.new()

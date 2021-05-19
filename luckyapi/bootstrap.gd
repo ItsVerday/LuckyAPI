@@ -7,6 +7,7 @@ func _initialize():
     print("LuckyAPI BOOTSTRAP > Executable directory: " + exe_dir)
     print("LuckyAPI BOOTSTRAP > Godot version: " + Engine.get_version_info().string)
 
+    ensure_dir_exists("user://_luckyapi_patched")
     load_folder(exe_dir.plus_file("luckyapi/modloader"), "modloader")
 
     print("LuckyAPI BOOTSTRAP > Running modloader...")
@@ -18,9 +19,13 @@ func _initialize():
 
     connect("node_added", self, "after_start", [], CONNECT_DEFERRED | CONNECT_ONESHOT)
 
+func ensure_dir_exists(dir_path: String):
+    var dir := Directory.new()
+    if !dir.dir_exists(dir_path):
+        _assert(dir.make_dir(dir_path) == OK, "Failed to create directory " + dir_path + "!")
+
 func load_folder(path: String, folder: String):
-    var exe_dir := OS.get_executable_path().get_base_dir()
-    var pck_file := exe_dir.plus_file("luckyapi").plus_file("content.pck")
+    var pck_file := "user://_luckyapi_patched".plus_file("content.pck")
 
     var packer := PCKPacker.new()
     _assert(packer.pck_start(pck_file) == OK, "Opening content.pck for writing failed!")
