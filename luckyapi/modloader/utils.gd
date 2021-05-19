@@ -258,6 +258,11 @@ func recursive_folder_delete(path: String):
             file_name = dir.get_next()
     dir.remove("")
 
+func ensure_dir_exists(dir_path: String):
+    var dir := Directory.new()
+    if !dir.dir_exists(dir_path):
+        _assert(dir.make_dir(dir_path) == OK, "Failed to create directory " + dir_path + "!")
+
 func read_text(file_path: String) -> String:
     var data_file := File.new()
     _assert(data_file.open(file_path, File.READ) == OK, "Failed to open " + file_path + "!")
