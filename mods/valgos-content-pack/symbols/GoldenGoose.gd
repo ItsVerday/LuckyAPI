@@ -5,7 +5,7 @@ func init(modloader: Reference, params):
 
     self.id = "golden_goose"
     self.value = 4
-    self.values = [20, 3]
+    self.values = [10, 3]
     self.rarity = "very_rare"
     self.groups = ["organism", "animal", "bird"]
     add_sfx_redirect("goose")

@@ -5,7 +5,7 @@ func init(modloader: Reference, params):
     self.id = "golden_egg"
 
 func patch_values(values):
-    values.push_back(5)
+    values.push_back(1)
     return values
 
 func patch_description(description):
