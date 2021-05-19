@@ -1,0 +1,9 @@
+{
+    "id": "no-symbol-animations",
+    "version": "1.0.0",
+    "authors": ["Valgo"],
+    "name": "No Symbol Animations",
+    "description": "Disables symbol animations entirely. Useful for speedrunning",
+    "dependencies": [],
+    "load-after": []
+}
