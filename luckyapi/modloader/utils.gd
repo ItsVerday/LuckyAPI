@@ -74,10 +74,13 @@ func get_symbol_list(group := "*", rarity := "*"):
     for symbol in _modloader.databases.tile_database:
         var group_match := false
 
-        for symbol_group in symbol.groups:
-            if match_value(symbol_group, group):
-                group_match = true
-                break
+        if symbol.groups.size() > 0:
+            for symbol_group in symbol.groups:
+                if match_value(symbol_group, group):
+                    group_match = true
+                    break
+        else:
+            group_match = match_value("nogroup", group)
         
         if not group_match:
             continue
