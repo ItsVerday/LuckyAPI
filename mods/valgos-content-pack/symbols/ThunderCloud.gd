@@ -17,7 +17,6 @@ func init(modloader: Reference, params):
 func add_conditional_effects(symbol, adjacent):
     symbol.add_effect(effect().if_value_random(1).add_symbol_type("rain").animate("shake"))
     symbol.add_effect(effect().if_value_random(2).add_symbol_type("lightning_bolt").animate("shake"))
-    randomize()
-    if values[0] > rand_range(0, 100):
+    if values[0] > random(0, 100):
         symbol.add_effect(effect().change_type("cloud").animate("circle"))
         symbol.add_effect(effect().if_value_random(3).add_symbol_type("rainbow"))
