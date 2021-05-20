@@ -46,7 +46,8 @@ func add_mod_symbol(path: String, params := {}):
     }
 
     databases.sfx_database.symbols[id] = mod_symbol.sfx
-    databases.rarity_database.symbols[mod_symbol.rarity].push_back(id)
+    if mod_symbol.rarity != null:
+        databases.rarity_database.symbols[mod_symbol.rarity].push_back(id)
 
     for group in mod_symbol.groups:
         if not databases.group_database.symbols.has(group):
@@ -242,6 +243,7 @@ func load_mods():
             current_mod_name = mod_name
             mod.load(self, info, tree)
         print("LuckyAPI MODLOADER > " + info.name + " " + info.version + " by " + get_names_list(info.authors) + " loaded!")
+    current_mod_name = ""
     print("LuckyAPI MODLOADER > Loading mods complete!")
 
 func translate(key: String):

@@ -1,6 +1,5 @@
 extends "res://modloader/utils.gd"
 
-var modloader: Reference
 var id: String
 var mod_name: String
 

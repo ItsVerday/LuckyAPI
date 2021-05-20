@@ -1,7 +1,5 @@
 extends "res://modloader/utils.gd"
 
-var modloader: Reference
-
 var id: String
 var value := 1
 var values := []

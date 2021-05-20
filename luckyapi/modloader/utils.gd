@@ -1,27 +1,21 @@
 extends Reference
 
-var _modloader := null
-
-func load_modloader():
-    if _modloader == null:
-        _modloader = get_tree().modloader
+var modloader: Reference
 
 func add_translation(key: String, value: String, locale := "en"):
-    load_modloader()
-    var translation := _modloader.translations[locale]
+    var translation := modloader.translations[locale]
     if translation == null:
         translation = Translation.new()
         translation.locale = locale
         TranslationServer.add_translation(translation)
-        _modloader.translations[locale] = translation
+        modloader.translations[locale] = translation
     
     translation.add_message(key, value)
 
 func translate(key: String):
-    load_modloader()
     var locale := TranslationServer.get_locale()
-    if _modloader.translations.has(locale):
-        var translation := _modloader.translations[locale]
+    if modloader.translations.has(locale):
+        var translation := modloader.translations[locale]
         var messages = translation.get_message_list()
         for check_key in messages:
             if key == check_key:
@@ -32,6 +26,9 @@ func translate(key: String):
 func join(a: String, b: String, delimeter := " ") -> String:
     if a.length() == 0:
         return b
+    
+    if b.length() == 0:
+        return a
     
     return a + delimeter + b
 
@@ -69,9 +66,9 @@ func match_value(value: String, match_against):
     return false
 
 func get_symbol_list(group := "*", rarity := "*"):
-    load_modloader()
     var symbols := []
-    for symbol in _modloader.databases.tile_database:
+    for symbol_key in modloader.databases.tile_database.keys():
+        var symbol := modloader.databases.tile_database[symbol_key]
         var group_match := false
 
         if symbol.groups.size() > 0:
@@ -86,7 +83,7 @@ func get_symbol_list(group := "*", rarity := "*"):
             continue
         
         if match_value(symbol.rarity, rarity):
-            symbols.add(symbol.type)
+            symbols.push_back(symbol.type)
     
     return symbols
 
@@ -102,25 +99,25 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
     
     var possible_symbol_counts := { "common": 0, "uncommon": 0, "rare": 0, "very_rare": 0 }
     for symbol in symbol_list:
-        if _modloader.databases.rarity_database["symbols"]["common"].has(symbol):
+        if modloader.databases.rarity_database["symbols"]["common"].has(symbol):
             possible_symbol_counts["common"] += 1
-        elif _modloader.databases.rarity_database["symbols"]["uncommon"].has(symbol):
+        elif modloader.databases.rarity_database["symbols"]["uncommon"].has(symbol):
             possible_symbol_counts["uncommon"] += 1
-        elif _modloader.databases.rarity_database["symbols"]["rare"].has(symbol):
+        elif modloader.databases.rarity_database["symbols"]["rare"].has(symbol):
             possible_symbol_counts["rare"] += 1
-        elif _modloader.databases.rarity_database["symbols"]["very_rare"].has(symbol):
+        elif modloader.databases.rarity_database["symbols"]["very_rare"].has(symbol):
             possible_symbol_counts["very_rare"] += 1
 
-    var rarity_chances := _modloader.databases.rarity_chances.symbols.duplicate(true)
-    rarity_chances.uncommon *= _modloader.globals.pop_up.rarity_bonuses.symbols.uncommon
+    var rarity_chances := modloader.databases.rarity_chances.symbols.duplicate(true)
+    rarity_chances.uncommon *= modloader.globals.pop_up.rarity_bonuses.symbols.uncommon
     if (possible_symbol_counts.uncommon == 0):
         rarity_chances.uncommon = 0
 
-    rarity_chances.rare *= _modloader.globals.pop_up.rarity_bonuses.symbols.rare
+    rarity_chances.rare *= modloader.globals.pop_up.rarity_bonuses.symbols.rare
     if (possible_symbol_counts.rare == 0):
         rarity_chances.rare = 0
 
-    rarity_chances.very_rare *= _modloader.globals.pop_up.rarity_bonuses.symbols.very_rare
+    rarity_chances.very_rare *= modloader.globals.pop_up.rarity_bonuses.symbols.very_rare
     if (possible_symbol_counts.very_rare == 0):
         rarity_chances.very_rare = 0
 
@@ -145,7 +142,7 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
 
     var possible_symbols := []
     for symbol in symbol_list:
-        if _modloader.databases.rarity_database.symbols[picked_rarity].has(symbol):
+        if modloader.databases.rarity_database.symbols[picked_rarity].has(symbol):
             possible_symbols.push_back(symbol)
     
     randomize()
@@ -197,12 +194,10 @@ func load_wav(path):
     return stream
 
 func add_symbol(type):
-    load_modloader()
-    _modloader.globals.reels.symbol_queue.push_back(type)
+    modloader.globals.reels.symbol_queue.push_back(type)
 
 func add_item(type):
-    load_modloader()
-    _modloader.globals.items.add_item(type)
+    modloader.globals.items.add_item(type)
 
 func patch(target_path: String, new_script_path: Array, node_name: Array, packer: PCKPacker):
     var scene := load(target_path)
@@ -447,8 +442,11 @@ class SymbolEffect:
         effect_dictionary.tiles_to_add.push_back({"type": type})
         return self
 
-    func add_symbol_group(group: String, min_rarity := "common"):
-        effect_dictionary.tiles_to_add.push_back({"group": group, "min_rarity": min_rarity})
+    func add_symbol_group(group: String, min_rarity := ""):
+        if min_rarity != "":
+            effect_dictionary.tiles_to_add.push_back({"group": group, "min_rarity": min_rarity})
+        else:
+            effect_dictionary.tiles_to_add.push_back({"group": group})
         return self
     
     func add_item_type(type: String):

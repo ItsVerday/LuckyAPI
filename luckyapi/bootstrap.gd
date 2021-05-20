@@ -12,6 +12,7 @@ func _initialize():
 
     print("LuckyAPI BOOTSTRAP > Running modloader...")
     modloader = load("res://modloader/modloader.gd").new(self)
+    modloader.modloader = modloader
     modloader.before_start()
 
     print("LuckyAPI BOOTSTRAP > Starting game...")
