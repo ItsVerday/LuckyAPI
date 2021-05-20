@@ -5,7 +5,7 @@ const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.2.0"
-const expected_versions := ["v0.6.3", "v0.6.4"]
+const expected_versions := ["v0.6.3", "v0.6.4", "v0.6.5"]
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
