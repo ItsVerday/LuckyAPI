@@ -12,6 +12,7 @@ var sfx_redirects := []
 var name: String
 var description: String
 var mod_name: String
+var findable := true
 
 var modifies_self_adjacency := false
 var modifies_adjacent_adjacency := false

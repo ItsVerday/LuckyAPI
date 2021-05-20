@@ -189,6 +189,7 @@ func patch_preload():
     patch("res://Slot Icon.tscn", ["res://modloader/patches/SlotIcon.gd"], ["Slot Icon"], packer)
     patch("res://Tooltip.tscn", ["res://modloader/patches/Tooltip_Card.gd"], ["Card"], packer)
     patch("res://Card.tscn", ["res://modloader/patches/Card.gd"], ["Card"], packer)
+    patch("res://Pop-up.tscn", ["res://modloader/patches/Pop-up.gd"], ["Pop-up"], packer)
 
     _assert(packer.flush(true) == OK, "Failed to write to preload.pck")
     
@@ -199,6 +200,7 @@ func patch_preload():
     force_reload("res://Slot Icon.tscn")
     force_reload("res://Tooltip.tscn")
     force_reload("res://Card.tscn")
+    force_reload("res://Pop-up.tscn")
     
     print("LuckyAPI MODLOADER > Patching game code complete!")
 
