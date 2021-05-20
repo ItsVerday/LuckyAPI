@@ -16,7 +16,6 @@ func load_globals(modloader: Reference):
     modloader.databases.item_database = self.item_database
     modloader.databases.sfx_database = self.sfx_database
     modloader.databases.rarity_database = self.rarity_database
-    modloader.databases.rarity_chances = self.rarity_chances
     modloader.databases.group_database = self.group_database
 
     modloader.globals.main = $"/root/Main"

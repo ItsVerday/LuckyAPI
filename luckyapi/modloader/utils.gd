@@ -113,18 +113,28 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
             possible_symbol_counts["rare"] += 1
         elif modloader.databases.rarity_database["symbols"]["very_rare"].has(symbol):
             possible_symbol_counts["very_rare"] += 1
-
-    var rarity_chances := modloader.databases.rarity_chances.symbols.duplicate(true)
+    
+    var rarity_chances := modloader.globals.main.rarity_chances.symbols.duplicate(true)
+    if possible_symbol_counts.common == 0:
+        rarity_chances.common = 0
+        rarity_chances.uncommon = 1
+        if possible_symbol_counts.uncommon == 0:
+            rarity_chances.uncommon = 0
+            rarity_chances.rare = 1
+            if possible_symbol_counts.rare == 0:
+                rarity_chances.rare = 0
+                rarity_chances.very_rare = 1
+    
     rarity_chances.uncommon *= modloader.globals.pop_up.rarity_bonuses.symbols.uncommon
-    if (possible_symbol_counts.uncommon == 0):
+    if possible_symbol_counts.uncommon == 0:
         rarity_chances.uncommon = 0
 
     rarity_chances.rare *= modloader.globals.pop_up.rarity_bonuses.symbols.rare
-    if (possible_symbol_counts.rare == 0):
+    if possible_symbol_counts.rare == 0:
         rarity_chances.rare = 0
 
     rarity_chances.very_rare *= modloader.globals.pop_up.rarity_bonuses.symbols.very_rare
-    if (possible_symbol_counts.very_rare == 0):
+    if possible_symbol_counts.very_rare == 0:
         rarity_chances.very_rare = 0
 
     var picked_rarity := ""
@@ -134,15 +144,15 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
     else:
         rarity_picker -= rarity_chances.very_rare
     
-    if rarity_picker < rarity_chances.rare and rarity == "":
+    if rarity_picker < rarity_chances.rare and picked_rarity == "":
         picked_rarity = "rare"
     else:
         rarity_picker -= rarity_chances.rare
     
-    if rarity_picker < rarity_chances.uncommon and rarity == "":
+    if rarity_picker < rarity_chances.uncommon and picked_rarity == "":
         picked_rarity = "uncommon"
     
-    if rarity == "":
+    if picked_rarity == "":
         picked_rarity = "common"
 
     var possible_symbols := []

@@ -34,7 +34,6 @@ func add_cards(f_rarities):
                 for i in card_pool[c].duplicate(true):
                     if not option_is_findable(i):
                         card_pool[c].erase(i)
-            print(card_pool)
             r_chances = $"/root/Main/".rarity_chances["symbols"].duplicate(true)
             database = $"/root/Main/".tile_database
             for r in r_chances.keys():
