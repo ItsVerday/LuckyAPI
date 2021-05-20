@@ -32,6 +32,13 @@ func join(a: String, b: String, delimeter := " ") -> String:
     
     return a + delimeter + b
 
+func random(lower: float, upper: float):
+    randomize()
+    return rand_range(lower, upper)
+
+func array_pick(arr):
+    return arr[floor(random(0, arr.size()))]
+
 func get_names_list(arr: Array):
     if arr.size() == 1:
         return arr[0]
@@ -94,8 +101,7 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
         return null
     
     if ignore_rarity:
-        randomize()
-        return symbol_list[floor(rand_range(0, symbol_list.size()))]
+        return array_pick(symbol_list)
     
     var possible_symbol_counts := { "common": 0, "uncommon": 0, "rare": 0, "very_rare": 0 }
     for symbol in symbol_list:
@@ -122,8 +128,7 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
         rarity_chances.very_rare = 0
 
     var picked_rarity := ""
-    randomize()
-    var rarity_picker := rand_range(0, 1)
+    var rarity_picker := random(0, 1)
     if rarity_picker < rarity_chances.very_rare:
         picked_rarity = "very_rare"
     else:
@@ -145,8 +150,7 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
         if modloader.databases.rarity_database.symbols[picked_rarity].has(symbol):
             possible_symbols.push_back(symbol)
     
-    randomize()
-    return possible_symbols[floor(rand_range(0, possible_symbols.size()))]
+    return array_pick(possible_symbols)
 
 func extract_script(scene: PackedScene, node_name: String) -> GDScript:
     var state: SceneState = scene.get_state()
