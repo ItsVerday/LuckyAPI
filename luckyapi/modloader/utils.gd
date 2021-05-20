@@ -233,7 +233,7 @@ func save_and_pack_resource(packer: PCKPacker, res: Resource, target_path: Strin
 func force_reload(resource_path: String):
     var new := ResourceLoader.load(resource_path, "", true)
     new.take_over_path(resource_path)
-
+    
 func load_folder(path: String, folder: String, name := "content"):
     var pck_file := "user://_luckyapi_patched".plus_file(name + ".pck")
 
