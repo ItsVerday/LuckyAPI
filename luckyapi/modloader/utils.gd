@@ -40,7 +40,9 @@ func array_pick(arr):
     return arr[floor(random(0, arr.size()))]
 
 func get_names_list(arr: Array):
-    if arr.size() == 1:
+    if arr.size() == 0:
+        return "N/A"
+    elif arr.size() == 1:
         return arr[0]
     elif arr.size() == 2:
         return arr[0] + " and " + arr[1]
@@ -50,7 +52,7 @@ func get_names_list(arr: Array):
     for name in arr:
         if index == 0:
             string += "and "
-            string += name
+        string += name
         if index > 0:
             string += ", "
         index -= 1
@@ -277,15 +279,25 @@ func ensure_dir_exists(dir_path: String):
 
 func read_text(file_path: String) -> String:
     var data_file := File.new()
-    _assert(data_file.open(file_path, File.READ) == OK, "Failed to open " + file_path + "!")
+    _assert(data_file.open(file_path, File.READ) == OK, "Failed to open " + file_path + " for reading!")
     var text := data_file.get_as_text()
     data_file.close()
     return text
+
+func write_text(file_path: String, text: String):
+    var data_file := File.new()
+    _assert(data_file.open(file_path, File.WRITE_READ) == OK, "Failed to open " + file_path + " for writing!")
+    data_file.store_string(text)
+    data_file.close()
 
 func read_json(file_path: String):
     var parse_result := JSON.parse(read_text(file_path))
     _assert(parse_result.error == OK, "Failed to parse " + file_path + " as JSON!")
     return parse_result.result
+
+func write_json(file_path: String, data, indent := "\t"):
+    var json_text := JSON.print(data, indent)
+    write_text(file_path, json_text)
 
 func _assert(condition: bool, message: String):
     if !condition:

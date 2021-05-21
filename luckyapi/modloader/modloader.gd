@@ -5,7 +5,7 @@ const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.2.0"
-const expected_versions := ["v0.6.3", "v0.6.4", "v0.6.5", "v0.6.6"]
+const expected_versions := ["v0.6.3", "v0.6.4", "v0.6.5", "v0.6.6", "v0.6.7"]
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
@@ -210,6 +210,8 @@ func after_start():
 
     print("LuckyAPI MODLOADER > Initialization complete!")
 
+    datadump()
+
 func load_mods():
     print("LuckyAPI MODLOADER > Loading mods...")
     var mods_dir := "user://mods/"
@@ -247,6 +249,15 @@ func load_mods():
         print("LuckyAPI MODLOADER > " + info.name + " " + info.version + " by " + get_names_list(info.authors) + " loaded!")
     current_mod_name = ""
     print("LuckyAPI MODLOADER > Loading mods complete!")
+
+func datadump():
+    print("LuckyAPI MODLOADER > Creating Data Dump...")
+
+    var datadump := load("res://modloader/datadump.gd").new()
+    datadump.init(self)
+    datadump.go()
+
+    print("LuckyAPI MODLOADER > Data Dump creation complete!")
 
 func translate(key: String):
     var locale := TranslationServer.get_locale()
