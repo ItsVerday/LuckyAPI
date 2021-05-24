@@ -14,7 +14,7 @@ func init(modloader: Reference, params):
 func patch_value(value: float) -> float:
     return value
 
-func patch_values(values: Array) -> Array:
+func patch_values(values: Array, size: int) -> Array:
     return values
 
 func patch_rarity(rarity: String) -> String:

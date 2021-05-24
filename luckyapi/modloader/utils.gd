@@ -523,6 +523,10 @@ class SymbolEffect:
 
         return self
     
+    func negate():
+        effect_dictionary.comparisons[effect_dictionary.comparisons.size() - 1].negate = true
+        return self
+    
     
     func unconditional():
         effect_dictionary.unconditional = true

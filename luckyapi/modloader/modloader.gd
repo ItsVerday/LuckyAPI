@@ -102,7 +102,7 @@ func patch_symbol(symbol_patch, id):
     if mod_symbol != null:
         mod_symbol.value = value
     
-    var values := symbol_patch.patch_values(database_entry.values)
+    var values := symbol_patch.patch_values(database_entry.values, database_entry.values.size())
     database_entry.values = values
     if mod_symbol != null:
         mod_symbol.values = values

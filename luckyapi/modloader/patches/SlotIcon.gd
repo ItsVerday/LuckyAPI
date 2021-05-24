@@ -16,6 +16,7 @@ func change_type(p_type: String, need_cond_effects: bool):
     update_mod_symbol(p_type)
     .change_type(p_type, need_cond_effects)
     set_texture(modloader.databases.icon_texture_database[self.type])
+    update_value_text()
 
 func update_mod_symbol(new_type: String):
     var mod_symbols := modloader.mod_symbols
@@ -189,7 +190,7 @@ func add_effect_to_symbol(y, x, effect):
 func add_effect_for_symbol(symbol, effect):
     add_effect_to_symbol(symbol.grid_position.y, symbol.grid_position.x, effect)
 
-func do_comp(comparison, c, target, c_effects, c_tbe):
+func do_comparison(comparison, c, target, c_effects, c_tbe):
     var result := .do_comp(comparison, c, target, c_effects, c_tbe)
 
     var comparison_target = self
@@ -221,6 +222,13 @@ func do_comp(comparison, c, target, c_effects, c_tbe):
                 if comp < value:
                     return false
         return true
+    
+    return result
+
+func do_comp(comparison, c, target, c_effects, c_tbe):
+    var result := do_comparison(comparison, c, target, c_effects, c_tbe)
+    if comparison.has("negate"):
+        result = not result
     
     return result
 
