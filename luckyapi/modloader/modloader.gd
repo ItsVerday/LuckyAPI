@@ -104,13 +104,30 @@ func patch_symbol(symbol_patch, id):
     database_entry.values = values
     if mod_symbol != null:
         mod_symbol.values = values
-
-    var rarity := symbol_patch.patch_rarity(database_entry.rarity)
+    
+    var rarity := database_entry.rarity
+    if rarity != null:
+        databases.rarity_database.symbols[rarity].erase(id)
+    rarity = symbol_patch.patch_rarity(rarity)
+    if rarity != null:
+        databases.rarity_database.symbols[rarity].push_back(id)
     database_entry.rarity = rarity
     if mod_symbol != null:
         mod_symbol.rarity = rarity
     
-    var groups := symbol_patch.patch_groups(database_entry.groups)
+    var groups := database_entry.groups
+    for group in groups:
+        databases.group_database.symbols[group].erase(id)
+        if databases.group_database.symbols[group].size() == 0:
+            databases.group_database.symbols[group] = null
+    
+    groups = symbol_patch.patch_groups(groups)
+    for group in groups:
+        if not databases.group_database.symbols.has(group):
+            databases.group_database.symbols[group] = []
+        
+        databases.group_database.symbols[group].push_back(id)
+    
     database_entry.groups = groups
     if mod_symbol != null:
         mod_symbol.groups = groups
@@ -163,6 +180,10 @@ func patch_symbol(symbol_patch, id):
         description = symbol_patch.patch_description(description)
         add_translation(id + "_desc", description, TranslationServer.get_locale())
 
+func check_missing_symbol(id):
+    if not databases.tile_database.has(id):
+        add_mod_symbol("res://modloader/MissingSymbol.gd", {"id": id})
+
 
 func before_start():
     print("LuckyAPI MODLOADER > Initializing LuckyAPI " + modloader_version + "...")
@@ -190,6 +211,7 @@ func patch_preload():
     patch("res://Tooltip.tscn", ["res://modloader/patches/Tooltip_Card.gd"], ["Card"], packer)
     patch("res://Card.tscn", ["res://modloader/patches/Card.gd"], ["Card"], packer)
     patch("res://Pop-up.tscn", ["res://modloader/patches/Pop-up.gd"], ["Pop-up"], packer)
+    patch("res://Reel.tscn", ["res://modloader/patches/Reel.gd"], ["Reel"], packer)
 
     _assert(packer.flush(true) == OK, "Failed to write to preload.pck")
     
@@ -201,6 +223,7 @@ func patch_preload():
     force_reload("res://Tooltip.tscn")
     force_reload("res://Card.tscn")
     force_reload("res://Pop-up.tscn")
+    force_reload("res://Reel.tscn")
 
     print("LuckyAPI MODLOADER > Patching game code complete!")
 
