@@ -21,6 +21,8 @@ var symbol_patches := {}
 var translations := {}
 var current_mod_name := ""
 
+var starting_symbols := []
+
 func _init(tree: SceneTree):
     self.tree = tree
 
@@ -181,8 +183,26 @@ func patch_symbol(symbol_patch, id):
         add_translation(id + "_desc", description, TranslationServer.get_locale())
 
 func check_missing_symbol(id):
+    if id == null:
+        return
+    
     if not databases.tile_database.has(id):
         add_mod_symbol("res://modloader/MissingSymbol.gd", {"id": id})
+
+
+func generate_starting_symbols():
+    var symbols := ["coin", "cherry", "pearl", "flower", "cat"]
+    if globals.pop_up.current_floor >= 5:
+        symbols.push_back("dud")
+    if globals.pop_up.current_floor >= 7:
+        symbols.push_back("dud")
+
+    for mod_id in modloader.mod_load_order:
+        var mod := modloader.mods[mod_id]
+        if mod.has_method("modify_starting_symbols"):
+            symbols = mod.modify_starting_symbols(symbols)
+    
+    starting_symbols = symbols
 
 
 func before_start():

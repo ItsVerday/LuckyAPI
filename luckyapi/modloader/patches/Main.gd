@@ -22,3 +22,8 @@ func load_globals(modloader: Reference):
     modloader.globals.items = $"/root/Main/Items"
     modloader.globals.reels = $"/root/Main/Reels"
     modloader.globals.pop_up = $"/root/Main/Pop-up Sprite/Pop-up"
+
+func new_game():
+    .new_game()
+
+    modloader.generate_starting_symbols()

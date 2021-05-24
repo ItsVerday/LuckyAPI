@@ -34,6 +34,13 @@ func start_animation(anim):
             animation_to_modify = mod.modify_animation(animation_to_modify)
     self.queued_anims[0] = animation_to_modify
 
+func animate():
+    if queued_anims.size() > 0 and queued_anims[0].anim_timer == 0:
+        if queued_anims[0].anim_type == "ordered_texture_cycle":
+            var arrow_order := [1, 2, 3, 5, 8, 7, 6, 4]
+            texture = extra_textures[arrow_order[(int(queued_anims[0].anim_result) % int(extra_textures.size()))] - 1]
+    .animate()
+
 func play_sfx(symbol, sfx_type):
     symbol.update_mod_symbol(symbol.type)
     var player := symbol.sfx_player
