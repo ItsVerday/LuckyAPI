@@ -43,12 +43,11 @@ func animate():
             texture = extra_textures[arrow_order[(int(queued_anims[0].anim_result) % int(extra_textures.size()))] - 1]
     .animate()
 
-func play_sfx(symbol, sfx_type):
-    symbol.update_mod_symbol(symbol.type)
+func play_sfx(symbol, symbol_type, sfx_type):
+    symbol.update_mod_symbol(symbol_type)
     var player := symbol.sfx_player
     var sfx_total_num := 0
     var db := modloader.databases.sfx_database["symbols"]
-    var symbol_type := symbol.type
 
     if symbol.prev_data.size() > 0:
         symbol_type = symbol.prev_data[symbol.prev_data.size() - 1].type
