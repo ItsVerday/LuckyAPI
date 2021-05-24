@@ -4,7 +4,9 @@ onready var modloader: Reference = get_tree().modloader
 var mod_symbol := null
 
 var value_text := 0
-var value_text_color = "<color_E14A68>"
+var value_text_color := "<color_E14A68>"
+var persistent_data := {}
+var non_persistent_data := {}
 
 func _ready():
     ._ready()
@@ -179,3 +181,79 @@ func add_effect_to_symbol(y, x, effect):
 
 func add_effect_for_symbol(symbol, effect):
     add_effect_to_symbol(symbol.grid_position.y, symbol.grid_position.x, effect)
+
+func do_comp(comparison, c, target, c_effects, c_tbe):
+    var result := .do_comp(comparison, c, target, c_effects, c_tbe)
+
+    var comparison_target = self
+    if comparison.has("dynamic_a_target"):
+        comparison_target = comparison.dynamic_a_target
+    
+    if comparison.has("lapi_data"):
+        var key := comparison.lapi_key
+        var value := comparison.lapi_value
+        var persistent := comparison.lapi_persistent
+        var default := comparison.lapi_default
+        var comp
+        if persistent:
+            comp = comparison_target.get_persistent_data(key, default)
+        else:
+            comp = comparison_target.get_non_persistent_data(key, default)
+        
+        match comparison.lapi_type:
+            "rand":
+                if comp < modloader.random(0, 100):
+                    return false
+            "equals":
+                if comp != value:
+                    return false
+            "less_than":
+                if comp >= value:
+                    return false
+            "greater_than_eq":
+                if comp < value:
+                    return false
+        return true
+    
+    return result
+
+func do_diff(c, target, c_tbe):
+    .do_diff(c, target, c_tbe)
+
+    if c.has("lapi_data"):
+        var key := c.lapi_key
+        var persistent := c.lapi_persistent
+        match c.lapi_operation:
+            "set":
+                if persistent:
+                    target.set_persistent_data(key, c.lapi_value)
+                else:
+                    target.set_non_persistent_data(key, c.lapi_value)
+            "add":
+                if persistent:
+                    target.set_persistent_data(key, target.get_persistent_data(key, 0) + c.lapi_value)
+                else:
+                    target.set_non_persistent_data(key, target.get_non_persistent_data(key, 0) + c.lapi_value)
+            "mult":
+                if persistent:
+                    target.set_persistent_data(key, target.get_persistent_data(key, 1) * c.lapi_value)
+                else:
+                    target.set_non_persistent_data(key, target.get_non_persistent_data(key, 1) * c.lapi_value)
+
+func get_persistent_data(key: String, default := 0):
+    if persistent_data.has(key):
+        return persistent_data[key]
+    
+    return default
+
+func set_persistent_data(key: String, value):
+    persistent_data[key] = value
+
+func get_non_persistent_data(key: String, default := 0):
+    if non_persistent_data.has(key):
+        return non_persistent_data[key]
+    
+    return default
+
+func set_non_persistent_data(key: String, value):
+    non_persistent_data[key] = value

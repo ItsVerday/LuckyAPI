@@ -5,7 +5,7 @@ const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.2.0"
-const expected_versions := ["v0.6.6", "v0.6.7", "v0.6.8", "v0.6.9"]
+const expected_versions := ["v0.6.8", "v0.6.9", "v0.6.10"]
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
@@ -206,7 +206,7 @@ func patch_preload():
 
     var packer := PCKPacker.new()
     _assert(packer.pck_start("user://_luckyapi_patched/preload.pck") == OK, "Opening preload.pck for writing failed!")
-    patch("res://Main.tscn", ["res://modloader/patches/Main.gd", "res://modloader/patches/Title.gd"], ["Main", "Title"], packer)
+    patch("res://Main.tscn", ["res://modloader/patches/Main.gd", "res://modloader/patches/Title.gd", "res://modloader/patches/Reels.gd"], ["Main", "Title", "Reels"], packer)
     patch("res://Slot Icon.tscn", ["res://modloader/patches/SlotIcon.gd"], ["Slot Icon"], packer)
     patch("res://Tooltip.tscn", ["res://modloader/patches/Tooltip_Card.gd"], ["Card"], packer)
     patch("res://Card.tscn", ["res://modloader/patches/Card.gd"], ["Card"], packer)

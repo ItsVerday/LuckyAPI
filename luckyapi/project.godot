@@ -16,12 +16,7 @@ _global_script_class_icons={
 [application]
 
 config/name="LuckyAPI"
-run/main_scene="res://modloader/__.tscn"
 
 [global]
 
 config/name=false
-
-[locale]
-
-translations=PoolStringArray( "res://ttest.en.translation" )

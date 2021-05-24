@@ -459,6 +459,70 @@ class SymbolEffect:
         effect_dictionary.comparisons.push_back({"a": property, "b": compare})
         return self
     
+    func if_persistent_data_random(key: String, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_persistent": true, "lapi_default": default, "lapi_type": "rand",
+            "a": "value", "b": 0
+        })
+
+        return self
+    
+    func if_persistent_data_less_than(key: String, value: float, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_value": value, "lapi_persistent": true, "lapi_default": default, "lapi_type": "less_than",
+            "a": "value", "b": 0
+        })
+
+        return self
+
+    func if_persistent_data_at_least(key: String, value: float, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_value": value, "lapi_persistent": true, "lapi_default": default, "lapi_type": "greater_than_eq",
+            "a": "value", "b": 0
+        })
+
+        return self
+
+    func if_persistent_data_equals(key: String, value: float, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_value": value, "lapi_persistent": true, "lapi_default": default, "lapi_type": "equals",
+            "a": "value", "b": 0
+        })
+
+        return self
+
+    func if_non_persistent_data_random(key: String, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_persistent": false, "lapi_default": default, "lapi_type": "rand",
+            "a": "value", "b": 0
+        })
+
+        return self
+    
+    func if_non_persistent_data_less_than(key: String, value: float, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_value": value, "lapi_persistent": false, "lapi_default": default, "lapi_type": "less_than",
+            "a": "value", "b": 0
+        })
+
+        return self
+
+    func if_non_persistent_data_at_least(key: String, value: float, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_value": value, "lapi_persistent": false, "lapi_default": default, "lapi_type": "greater_than_eq",
+            "a": "value", "b": 0
+        })
+
+        return self
+
+    func if_non_persistent_data_equals(key: String, value: float, default := 0):
+        effect_dictionary.comparisons.push_back({
+            "lapi_data": true, "lapi_key": key, "lapi_value": value, "lapi_persistent": false, "lapi_default": default, "lapi_type": "equals",
+            "a": "value", "b": 0
+        })
+
+        return self
+    
     
     func unconditional():
         effect_dictionary.unconditional = true
@@ -591,4 +655,52 @@ class SymbolEffect:
     
     func set_giver(giver):
         effect_dictionary.giver = giver
+        return self
+    
+    func set_persistent_data(key: String, value):
+        effect_dictionary.lapi_data = true
+        effect_dictionary.lapi_key = key
+        effect_dictionary.lapi_value = value
+        effect_dictionary.lapi_persistent = true
+        effect_dictionary.lapi_operation = "set"
+        return self
+
+    func add_to_persistent_data(key: String, value):
+        effect_dictionary.lapi_data = true
+        effect_dictionary.lapi_key = key
+        effect_dictionary.lapi_value = value
+        effect_dictionary.lapi_persistent = true
+        effect_dictionary.lapi_operation = "add"
+        return self
+
+    func multiply_persistent_data(key: String, value):
+        effect_dictionary.lapi_data = true
+        effect_dictionary.lapi_key = key
+        effect_dictionary.lapi_value = value
+        effect_dictionary.lapi_persistent = false
+        effect_dictionary.lapi_operation = "mult"
+        return self
+
+    func set_non_persistent_data(key: String, value):
+        effect_dictionary.lapi_data = true
+        effect_dictionary.lapi_key = key
+        effect_dictionary.lapi_value = value
+        effect_dictionary.lapi_persistent = false
+        effect_dictionary.lapi_operation = "set"
+        return self
+
+    func add_to_non_persistent_data(key: String, value):
+        effect_dictionary.lapi_data = true
+        effect_dictionary.lapi_key = key
+        effect_dictionary.lapi_value = value
+        effect_dictionary.lapi_persistent = false
+        effect_dictionary.lapi_operation = "add"
+        return self
+
+    func multiply_non_persistent_data(key: String, value):
+        effect_dictionary.lapi_data = true
+        effect_dictionary.lapi_key = key
+        effect_dictionary.lapi_value = value
+        effect_dictionary.lapi_persistent = false
+        effect_dictionary.lapi_operation = "mult"
         return self
