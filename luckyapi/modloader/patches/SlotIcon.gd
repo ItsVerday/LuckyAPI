@@ -36,12 +36,11 @@ func start_animation(anim):
             animation_to_modify = mod.modify_animation(animation_to_modify)
     self.queued_anims[0] = animation_to_modify
 
-func animate():
-    if queued_anims.size() > 0 and queued_anims[0].anim_timer == 0:
-        if queued_anims[0].anim_type == "ordered_texture_cycle":
-            var arrow_order := [1, 2, 3, 5, 8, 7, 6, 4]
-            texture = extra_textures[arrow_order[(int(queued_anims[0].anim_result) % int(extra_textures.size()))] - 1]
-    .animate()
+    if animation_to_modify == "ordered_texture_cycle" and animation_to_modify.anim_timer == 0:
+        var arrow_order := [1, 2, 3, 5, 8, 7, 6, 4]
+        texture = extra_textures[arrow_order[(int(queued_anims[0].anim_result) % int(extra_textures.size()))] - 1]
+        if texture != null:
+            set_texture(texture)
 
 func play_sfx(symbol, symbol_type, sfx_type):
     symbol.update_mod_symbol(symbol_type)

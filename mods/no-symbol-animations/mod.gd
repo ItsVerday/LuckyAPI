@@ -5,3 +5,4 @@ func load(modloader: Reference, mod_info, tree: SceneTree):
 
 func modify_animation(animation):
     animation.anim_timer = 0
+    return animation
