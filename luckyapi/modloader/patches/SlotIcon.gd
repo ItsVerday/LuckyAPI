@@ -5,6 +5,7 @@ var mod_symbol := null
 
 var value_text := 0
 var value_text_color := "<color_E14A68>"
+var has_effects := false
 var persistent_data := {}
 var non_persistent_data := {}
 
@@ -174,6 +175,8 @@ func add_conditional_effects():
         for patch in patches:
             if patch.has_method("add_conditional_effects"):
                 patch.add_conditional_effects(self, adj_icons)
+    
+    has_effects = true
 
 func add_effect(effect):
     if effect.effect_dictionary != null:
