@@ -164,6 +164,17 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
     
     return array_pick(possible_symbols)
 
+
+func get_mod_symbols(mod_id: String):
+    return modloader.mod_content[mod_id].symbols
+
+func get_mod_symbol_patches(mod_id: String):
+    return modloader.mod_content[mod_id].symbol_patches
+
+func mod_installed(mod_id: String):
+    return modloader.mods.has(mod_id)
+
+
 func extract_script(scene: PackedScene, node_name: String) -> GDScript:
     var state: SceneState = scene.get_state()
     

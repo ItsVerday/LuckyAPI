@@ -12,5 +12,6 @@ func spin():
     for r in reels:
         for i in r.icons:
             i.has_effects = false
-
+    modloader.starting_symbols = []
+    
     .spin()

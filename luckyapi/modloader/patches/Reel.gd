@@ -8,6 +8,9 @@ func load_icons():
     .load_icons()
 
 func load_base_icons():
+    if modloader.starting_symbols.size() == 0:
+        modloader.generate_starting_symbols()
+
     var symbols := []
     var index := reel_num
     while index < modloader.starting_symbols.size():

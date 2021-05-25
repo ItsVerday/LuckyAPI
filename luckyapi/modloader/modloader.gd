@@ -13,6 +13,7 @@ var exe_dir := OS.get_executable_path().get_base_dir()
 var mods := {}
 var mod_info := {}
 var mod_load_order := []
+var mod_content := {}
 var mod_count := 0
 var databases := {}
 var globals := {}
@@ -28,12 +29,14 @@ func _init(tree: SceneTree):
 
 func add_mod_symbol(path: String, params := {}):
     var script := load(path)
+    _assert(script.get_base_script() == "res://modloader/ModSymbol.gd", "Mod symbol " + id + " does not extend ModSymbol.gd!")
     var mod_symbol := script.new()
     mod_symbol.init(self, params)
     var id := mod_symbol.id
     mod_symbols[id] = mod_symbol
-    mod_symbol.mod_name = current_mod_name
-    _assert(script.get_base_script() == "res://modloader/ModSymbol.gd", "Mod symbol " + id + " does not extend ModSymbol.gd!")
+    if current_mod_name != "":
+        mod_symbol.mod_name = current_mod_name
+        mod_content[current_mod_name].symbols.push_back(mod_symbol)
 
     databases.icon_texture_database[id] = mod_symbol.texture
     for extra_texture_key in mod_symbol.extra_textures.keys():
@@ -78,14 +81,16 @@ func add_mod_symbol(path: String, params := {}):
 
 func add_symbol_patch(path: String, params := {}):
     var script := load(path)
+    _assert(script.get_base_script() == "res://modloader/SymbolPatcher.gd", "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
     var symbol_patch := script.new()
     symbol_patch.init(self, params)
     var id := symbol_patch.id
     if not symbol_patches.has(id):
         symbol_patches[id] = []
     symbol_patches[id].push_back(symbol_patch)
-    symbol_patch.mod_name = current_mod_name
-    _assert(script.get_base_script() == "res://modloader/SymbolPatcher.gd", "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
+    if current_mod_name != "":
+        symbol_patch.mod_name = current_mod_name
+        mod_content[current_mod_name].symbol_patches.push_back(symbol_patch)
 
     if databases.tile_database.has(id):
         patch_symbol(symbol_patch, id)
@@ -272,6 +277,11 @@ func load_mods():
 
                 mods[found_name] = mod
                 mod_info[found_name] = info
+                mod_content[found_name] = {
+                    "symbols": [],
+                    "symbol_patches": []
+                }
+
                 mod_count += 1
                 print("LuckyAPI MODLOADER > Mod loaded: " + found_name)
                                 
