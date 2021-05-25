@@ -165,6 +165,61 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
     return array_pick(possible_symbols)
 
 
+func list_symbols(source, filters := {}):
+    var symbols := source
+
+    if symbols == "inventory":
+        symbols = []
+        for r in modloader.globals.reels.reels:
+            for i in r.icons:
+                symbols.push_back(i)
+    elif symbols == "reels":
+        symbols = []
+        for r in modloader.globals.reels.displayed_icons:
+            for i in r:
+                symbols.push_back(i)
+    
+    _assert(symbols is Array, "list_symbols source is not a valid string or symbol array!")
+
+    if filters.has("type"):
+        var new_symbols := []
+        for symbol in symbols:
+            if match_value(symbol.type, filters.type):
+                new_symbols.push_back(symbol)
+        
+        symbols = new_symbols
+
+    if filters.has("group"):
+        var new_symbols := []
+        for symbol in symbols:
+            var group_match := false
+
+            if symbol.groups.size() > 0:
+                for symbol_group in symbol.groups:
+                    if match_value(symbol_group, filters.group):
+                        group_match = true
+                        break
+            else:
+                group_match = match_value("nogroup", filters.group)
+            
+            if group_match:
+                new_symbols.push_back(symbol)
+        
+        symbols = new_symbols
+
+    if filters.has("rarity"):
+        var new_symbols := []
+        for symbol in symbols:
+            if match_value(symbol.rarity, filters.rarity):
+                new_symbols.push_back(symbol)
+        
+        symbols = new_symbols
+
+    return symbols
+
+func count_symbols(source, filters := {}):
+    return list_symbols(source, filters).size()
+
 func get_mod_symbols(mod_id: String):
     return modloader.mod_content[mod_id].symbols
 

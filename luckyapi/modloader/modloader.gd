@@ -29,7 +29,6 @@ func _init(tree: SceneTree):
 
 func add_mod_symbol(path: String, params := {}):
     var script := load(path)
-    _assert(script.get_base_script() == "res://modloader/ModSymbol.gd", "Mod symbol " + id + " does not extend ModSymbol.gd!")
     var mod_symbol := script.new()
     mod_symbol.init(self, params)
     var id := mod_symbol.id
@@ -37,6 +36,7 @@ func add_mod_symbol(path: String, params := {}):
     if current_mod_name != "":
         mod_symbol.mod_name = current_mod_name
         mod_content[current_mod_name].symbols.push_back(mod_symbol)
+    _assert(script.get_base_script() == "res://modloader/ModSymbol.gd", "Mod symbol " + id + " does not extend ModSymbol.gd!")
 
     databases.icon_texture_database[id] = mod_symbol.texture
     for extra_texture_key in mod_symbol.extra_textures.keys():
@@ -81,7 +81,6 @@ func add_mod_symbol(path: String, params := {}):
 
 func add_symbol_patch(path: String, params := {}):
     var script := load(path)
-    _assert(script.get_base_script() == "res://modloader/SymbolPatcher.gd", "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
     var symbol_patch := script.new()
     symbol_patch.init(self, params)
     var id := symbol_patch.id
@@ -91,6 +90,7 @@ func add_symbol_patch(path: String, params := {}):
     if current_mod_name != "":
         symbol_patch.mod_name = current_mod_name
         mod_content[current_mod_name].symbol_patches.push_back(symbol_patch)
+    _assert(script.get_base_script() == "res://modloader/SymbolPatcher.gd", "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
 
     if databases.tile_database.has(id):
         patch_symbol(symbol_patch, id)
