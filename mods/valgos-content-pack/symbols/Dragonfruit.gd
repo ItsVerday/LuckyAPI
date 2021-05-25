@@ -7,7 +7,7 @@ func init(modloader: Reference, params):
     self.value = 3
     self.values = []
     self.rarity = "rare"
-    self.groups = ["farmerlikes", "plant", "food", "fruit"]
+    self.groups = ["farmerlikes", "plant", "food", "fruit", "dragonlikes"]
 
     self.texture = load_texture("res://valgos-content-pack/symbols/dragonfruit.png")
     self.name = "Dragonfruit"
