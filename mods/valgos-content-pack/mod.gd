@@ -15,12 +15,12 @@ func load(modloader: Reference, mod_info, tree: SceneTree):
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/Dragonfruit.gd")
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/PotOfGold.gd")
     modloader.add_mod_symbol("res://valgos-content-pack/symbols/LightningBolt.gd")
+    modloader.add_mod_symbol("res://valgos-content-pack/symbols/BlackHole.gd")
 
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/GoldenEgg.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Coconut.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/CoconutHalf.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Banana.gd")
-    modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/BananaPeel.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Apple.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Watermelon.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Coin.gd")
