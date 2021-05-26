@@ -37,8 +37,8 @@ func create_symbols_database():
         else:
             symbol_data.mod = mod_symbol.mod_name
         
-        symbol_data.name = tr(symbol_data.id)
-        symbol_data.description = tr(symbol_data.id + "_desc")
+        symbol_data.name = translate(symbol_data.id, false)
+        symbol_data.description = translate(symbol_data.id + "_desc", false)
         if symbol_data.description == symbol_data.id + "_desc":
             symbol_data.description = ""
 
@@ -149,18 +149,24 @@ func fix_description(description, symbol):
         result_value = regex_value.search(fixed_description)
 
     var regex_group := RegEx.new()
-    regex_group.compile("<group_([a-zA-Z0-9_]+)>.*?<last_\\1+>")
+    regex_group.compile("<group_([a-zA-Z0-9_]+)>.*?<last_\\1>")
     var result_group := regex_group.search(fixed_description)
     while result_group != null:
         var ref := result_group.get_string(1)
         var name := "Group `" + ref + "`"
         fixed_description = splice(fixed_description, result_group.get_start(), result_group.get_end(), "[" + name + "](#group_" + ref + ")")
         result_group = regex_group.search(fixed_description)
+
+    var regex_all := RegEx.new()
+    regex_all.compile("<all_(and|or)_([a-zA-Z0-9_]+)>")
+    var result_all := regex_all.search(fixed_description)
+    while result_all != null:
+        var ref := result_all.get_string(2)
+        var name := "Group `" + ref + "`"
+        fixed_description = splice(fixed_description, result_all.get_start(), result_all.get_end(), "[" + name + "](#group_" + ref + ")")
+        result_all = regex_all.search(fixed_description)
     
     return fixed_description
-
-func splice(string, start, end, replace):
-    return string.substr(0, start) + replace + string.substr(end)
 
 func print_dd(message: String):
     print("LuckyAPI DATADUMP > " + message)

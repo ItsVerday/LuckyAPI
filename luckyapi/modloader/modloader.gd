@@ -36,7 +36,7 @@ func add_mod_symbol(path: String, params := {}):
     if current_mod_name != "":
         mod_symbol.mod_name = current_mod_name
         mod_content[current_mod_name].symbols.push_back(mod_symbol)
-    _assert(script.get_base_script() == "res://modloader/ModSymbol.gd", "Mod symbol " + id + " does not extend ModSymbol.gd!")
+    _assert(check_extends(script, "res://modloader/ModSymbol.gd"), "Mod symbol " + id + " does not extend ModSymbol.gd!")
 
     databases.icon_texture_database[id] = mod_symbol.texture
     for extra_texture_key in mod_symbol.extra_textures.keys():
@@ -90,7 +90,7 @@ func add_symbol_patch(path: String, params := {}):
     if current_mod_name != "":
         symbol_patch.mod_name = current_mod_name
         mod_content[current_mod_name].symbol_patches.push_back(symbol_patch)
-    _assert(script.get_base_script() == "res://modloader/SymbolPatcher.gd", "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
+    _assert(check_extends(script, "res://modloader/SymbolPatcher.gd"), "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
 
     if databases.tile_database.has(id):
         patch_symbol(symbol_patch, id)
@@ -209,6 +209,22 @@ func generate_starting_symbols():
     
     starting_symbols = symbols
 
+func add_all_tags_in_descriptions():
+    for symbol_id in databases.tile_database.keys():
+        var description := translate(symbol_id + "_desc")
+        if description == symbol_id + "_desc":
+            continue
+        
+        var regex_group := RegEx.new()
+        regex_group.compile("<group_([a-zA-Z0-9_]+)> (and|or) <last_\\1>")
+        var result_group := regex_group.search(description)
+        while result_group != null:
+            var id := result_group.get_string(1)
+            var join := result_group.get_string(2)
+            description = splice(description, result_group.get_start(), result_group.get_end(), "<all_" + join + "_" + id + ">")
+            result_group = regex_group.search(description)
+        
+        add_translation(symbol_id + "_desc", description, TranslationServer.get_locale())
 
 func before_start():
     print("LuckyAPI MODLOADER > Initializing LuckyAPI " + modloader_version + "...")
@@ -255,6 +271,7 @@ func patch_preload():
 
 func after_start():
     load_mods()
+    add_all_tags_in_descriptions()
 
     print("LuckyAPI MODLOADER > Initialization complete!")
 
@@ -311,17 +328,6 @@ func datadump():
     datadump.go()
 
     print("LuckyAPI MODLOADER > Data Dump creation complete!")
-
-func translate(key: String):
-    var locale := TranslationServer.get_locale()
-    if translations.has(locale):
-        var translation := translations[locale]
-        var messages = translation.get_message_list()
-        for check_key in messages:
-            if key == check_key:
-                return translation.get_message(key)
-    
-    return TranslationServer.translate(key)
 
 func add_mod_to_load_order(mod_id: String, load_order: Array, tree := []):
     _assert(tree.find(mod_id) == -1, "Circular 'load_after' for mods!")

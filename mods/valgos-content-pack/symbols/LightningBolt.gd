@@ -7,7 +7,7 @@ func init(modloader: Reference, params):
     self.value = 2
     self.values = [2, 3]
     self.rarity = "rare"
-    self.groups = []
+    self.groups = ["thunder_cloud_lightning"]
     add_sfx_redirect("sun", "default", "default")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/lightning_bolt.png")

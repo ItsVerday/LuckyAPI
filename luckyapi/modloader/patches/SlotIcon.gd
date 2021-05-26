@@ -16,6 +16,8 @@ func _ready():
 func change_type(p_type: String, need_cond_effects: bool):
     update_mod_symbol(p_type)
     .change_type(p_type, need_cond_effects)
+    persistent_data = {}
+    non_persistent_data = {}
     set_texture(modloader.databases.icon_texture_database[self.type])
     update_value_text()
 

@@ -12,16 +12,22 @@ func add_translation(key: String, value: String, locale := "en"):
     
     translation.add_message(key, value)
 
-func translate(key: String):
+func translate(key: String, fix := true):
     var locale := TranslationServer.get_locale()
     if modloader.translations.has(locale):
         var translation := modloader.translations[locale]
         var messages = translation.get_message_list()
         for check_key in messages:
             if key == check_key:
-                return translation.get_message(key)
+                var tr := translation.get_message(key)
+                if fix:
+                    tr = fix_translation(tr)
+                return tr
     
-    return TranslationServer.translate(key)
+    var tr := TranslationServer.translate(key)
+    if fix:
+        tr = fix_translation(tr)
+    return tr
 
 func join(a: String, b: String, delimeter := " ") -> String:
     if a.length() == 0:
@@ -31,6 +37,40 @@ func join(a: String, b: String, delimeter := " ") -> String:
         return a
     
     return a + delimeter + b
+
+func splice(string, start, end, replace):
+    return string.substr(0, start) + replace + string.substr(end)
+
+func fix_translation(string):
+    return fix_all_tags(string)
+
+func fix_all_tags(string):
+    var regex_all := RegEx.new()
+    regex_all.compile("<all_(and|or)_([a-zA-Z0-9_]+)>")
+    var result_all := regex_all.search(string)
+    while result_all != null:
+        var join := result_all.get_string(1)
+        var id := result_all.get_string(2)
+        var group_members := get_group_members(id)
+        var replace := "<group_" + id + "> " + join + " <last_" + id + ">"
+        if group_members.size() == 0:
+            replace = "none"
+        if group_members.size() == 1:
+            replace = "<icon_" + group_members[0] + ">"
+        
+        string = splice(string, result_all.get_start(), result_all.get_end(), replace)
+        result_all = regex_all.search(string)
+    
+    return string
+
+func get_group_members(id):
+    if modloader.databases.group_database.symbols.has(id):
+        return modloader.databases.group_database.symbols[id]
+    
+    if modloader.databases.group_database.items.has(id):
+        return modloader.databases.group_database.items[id]
+    
+    return []
 
 func random(lower: float, upper: float):
     randomize()
@@ -228,6 +268,17 @@ func get_mod_symbol_patches(mod_id: String):
 
 func mod_installed(mod_id: String):
     return modloader.mods.has(mod_id)
+
+
+func check_extends(script, base):
+    var check_script := script
+    while check_script != null:
+        if check_script.resource_path == base:
+            return true
+        
+        check_script = check_script.get_base_script()
+    
+    return false
 
 
 func extract_script(scene: PackedScene, node_name: String) -> GDScript:

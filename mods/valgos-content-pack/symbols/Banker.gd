@@ -12,8 +12,8 @@ func init(modloader: Reference, params):
 
     self.texture = load_texture("res://valgos-content-pack/symbols/banker.png")
     self.name = "Banker"
-    self.description = "Adjacent <icon_bank> give <color_E14A68><value_1>x<end> more <icon_coin>."
+    self.description = "Adjacent <all_and_bankerlikes> give <color_E14A68><value_1>x<end> more <icon_coin>."
 
 func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
-        symbol.add_effect_for_symbol(i, effect().if_type("bank").change_value_multiplier(values[0]).animate("bounce", "default", [symbol, i]))
+        symbol.add_effect_for_symbol(i, effect().if_group("bankerlikes").change_value_multiplier(values[0]).animate("bounce", "default", [symbol, i]))

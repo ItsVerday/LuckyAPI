@@ -12,7 +12,7 @@ func init(modloader: Reference, params):
 
     self.texture = load_texture("res://valgos-content-pack/symbols/banana_tree.png")
     self.name = "Banana Tree"
-    self.description = "Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <group_banana_tree_adds> or <last_banana_tree_adds>."
+    self.description = "Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <all_or_banana_tree_adds>."
 
 func add_conditional_effects(symbol, adjacent):
     symbol.add_effect(effect().if_value_random(0).add_symbol_type("banana_tree_adds").animate("bounce"))

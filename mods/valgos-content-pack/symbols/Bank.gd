@@ -7,15 +7,15 @@ func init(modloader: Reference, params):
     self.value = 1
     self.values = [5, 4, 1]
     self.rarity = "uncommon"
-    self.groups = []
+    self.groups = ["bankerlikes"]
     add_sfx_redirect("oyster", "default", "spawn")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/bank.png")
     self.name = "Bank"
-    self.description = "Permanently gives <icon_coin><color_FBF236><value_3><end> more after every <color_E14A68><value_2> turns<end>. Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <icon_coin>."
+    self.description = "Permanently gives <icon_coin><color_FBF236><value_3><end> more after every <color_E14A68><value_2> turns<end>. Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <all_or_bank_adds>."
 
 func add_conditional_effects(symbol, adjacent):
-    symbol.add_effect(effect().if_value_random(0).add_symbol_type("coin").animate("bounce", "spawn"))
+    symbol.add_effect(effect().if_value_random(0).add_symbol_group("bank_adds").animate("bounce", "spawn"))
     symbol.add_effect(effect().if_property_at_least("times_displayed", values[1]).add_permanent_bonus(values[2]))
     symbol.add_effect(effect().if_property_at_least("times_displayed", values[1]).set_value("times_displayed", 0).animate("shake"))
 

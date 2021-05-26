@@ -7,15 +7,15 @@ func init(modloader: Reference, params):
     self.value = 4
     self.values = [10, 3]
     self.rarity = "very_rare"
-    self.groups = ["organism", "animal", "bird"]
+    self.groups = ["organism", "animal", "bird", "golden_egg_adds"]
     add_sfx_redirect("goose")
     add_sfx_redirect("mrs_fruit", "default", "boost")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/golden_goose.png")
     self.name = "Golden Goose"
-    self.description = "Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <icon_golden_egg>. Adjacent <icon_golden_egg> give <color_E14A68><value_2>x<end> more <icon_coin>."
+    self.description = "Has a <color_E14A68><value_1>%<end> chance of <color_E14A68>adding<end> <all_or_golden_goose_adds>. Adjacent <all_and_golden_goose_likes> give <color_E14A68><value_2>x<end> more <icon_coin>."
 
 func add_conditional_effects(symbol, adjacent):
-    symbol.add_effect(effect().if_value_random(0).add_symbol_type("golden_egg").animate("shake"))
+    symbol.add_effect(effect().if_value_random(0).add_symbol_group("golden_goose_adds").animate("shake"))
     for i in adjacent:
-        symbol.add_effect_for_symbol(i, effect().if_type("golden_egg").change_value_multiplier(values[1]).animate("bounce", "boost", [symbol, i]))
+        symbol.add_effect_for_symbol(i, effect().if_group("golden_goose_likes").change_value_multiplier(values[1]).animate("bounce", "boost", [symbol, i]))

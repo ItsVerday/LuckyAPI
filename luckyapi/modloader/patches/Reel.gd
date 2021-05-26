@@ -5,6 +5,7 @@ onready var modloader: Reference = get_tree().modloader
 func load_icons():
     for icon_type in icon_types:
         modloader.check_missing_symbol(icon_type)
+    
     .load_icons()
 
 func load_base_icons():
@@ -33,5 +34,9 @@ func load_base_icons():
         
         if not inserted:
             icon_types.push_back(symbol)
+    
+    max_icons = icon_types.size()
+    if max_icons < 5:
+        max_icons = 5
 
     load_icons()

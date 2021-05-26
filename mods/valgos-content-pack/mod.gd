@@ -23,3 +23,5 @@ func load(modloader: Reference, mod_info, tree: SceneTree):
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/BananaPeel.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Apple.gd")
     modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Watermelon.gd")
+    modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Coin.gd")
+    modloader.add_symbol_patch("res://valgos-content-pack/symbols/patches/Rain.gd")

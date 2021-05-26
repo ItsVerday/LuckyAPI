@@ -7,7 +7,7 @@ func init(modloader: Reference, params):
     self.value = 5
     self.values = [4]
     self.rarity = "very_rare"
-    self.groups = []
+    self.groups = ["cloudlikes", "pot_of_gold_likes", "thunder_cloud_rainbow"]
     add_sfx_redirect("oyster")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/rainbow.png")

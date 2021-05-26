@@ -5,14 +5,14 @@ func init(modloader: Reference, params):
 
     self.id = "dragon"
     self.value = 5
-    self.values = [3, 4]
+    self.values = [3, 5]
     self.rarity = "very_rare"
     self.groups = ["organism", "animal"]
     add_sfx_redirect("beastmaster")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/dragon.png")
     self.name = "Dragon"
-    self.description = "Adjacent <icon_dragon> give <color_E14A68><value_1>x<end> more <icon_coin>. <color_E14A68>Destroys<end> adjacent <group_dragonlikes> and <last_dragonlikes>. Permanently gives <icon_coin><color_FBF236><value_2><end> for each symbol <color_E14A68>destroyed<end>."
+    self.description = "Adjacent <icon_dragon> give <color_E14A68><value_1>x<end> more <icon_coin>. <color_E14A68>Destroys<end> adjacent <all_and_dragonlikes>. Permanently gives <icon_coin><color_FBF236><value_2><end> for each symbol <color_E14A68>destroyed<end>."
 
 func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
