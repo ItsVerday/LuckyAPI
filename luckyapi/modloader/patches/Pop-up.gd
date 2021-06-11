@@ -3,11 +3,7 @@ extends "res://Pop-up_Pop-up.gd"
 onready var modloader: Reference = get_tree().modloader
 
 func option_is_findable(type):
-    var mod_symbols := modloader.mod_symbols
-    if not mod_symbols.has(type):
-        return true
-
-    return mod_symbols[type].findable
+    return modloader.can_find_symbol(type)
 
 func add_cards(f_rarities):
     var email = emails[0]

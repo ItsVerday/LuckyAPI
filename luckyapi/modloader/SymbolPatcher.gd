@@ -49,3 +49,6 @@ func modify_adjacent_adjacency(myself, my_grid_position, to_modify, to_modify_gr
 
 func modify_global_adjacency(myself, my_grid_position, to_modify, to_modify_grid_position, currently_adjacent, symbol_grid):
     return currently_adjacent
+
+func can_find_symbol(symbol_grid):
+    return true

@@ -43,3 +43,6 @@ func update_value_text(symbol, values):
 
 func add_conditional_effects(adjacent):
     pass
+
+func can_find_symbol(symbol_grid):
+    return findable

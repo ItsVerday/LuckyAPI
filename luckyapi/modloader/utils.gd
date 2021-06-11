@@ -99,6 +99,21 @@ func get_names_list(arr: Array):
     
     return string
 
+func can_find_symbol(type):
+    var displayed_icons := modloader.globals.reels.displayed_icons
+    var mod_symbols := modloader.mod_symbols
+    if mod_symbols.has(type):
+        if not mod_symbols[type].can_find_symbol(displayed_icons):
+            return false
+    
+    var patches := modloader.symbol_patches
+    if patches.has(type):
+        for patch in patches[type]:
+            if not patch.can_find_symbol(displayed_icons):
+                return false
+    
+    return true
+
 func match_value(value: String, match_against):
     if match_against is String:
         if match_against == "*":
@@ -114,7 +129,7 @@ func match_value(value: String, match_against):
     
     return false
 
-func get_symbol_list(group := "*", rarity := "*"):
+func get_symbol_list(group := "*", rarity := "*", ignore_can_find := false):
     var symbols := []
     for symbol_key in modloader.databases.tile_database.keys():
         var symbol := modloader.databases.tile_database[symbol_key]
@@ -131,13 +146,13 @@ func get_symbol_list(group := "*", rarity := "*"):
         if not group_match:
             continue
         
-        if match_value(symbol.rarity, rarity):
+        if match_value(symbol.rarity, rarity) and (can_find_symbol(symbol.type) or ignore_can_find):
             symbols.push_back(symbol.type)
     
     return symbols
 
-func pick_symbol(group := "*", rarity := "*", ignore_rarity := false):
-    var symbol_list := get_symbol_list(group, rarity)
+func pick_symbol(group := "*", rarity := "*", ignore_rarity := false, ignore_can_find := false):
+    var symbol_list := get_symbol_list(group, rarity, ignore_can_find)
 
     if symbol_list.size() == 0:
         return null
