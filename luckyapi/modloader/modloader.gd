@@ -285,23 +285,33 @@ func load_mods():
         _assert(_dir.list_dir_begin(true) == OK, "list_dir_began failed!")
         var found_name := _dir.get_next()
         while found_name != "":
+            var mod_name := found_name
             if _dir.current_is_dir():
-                print("LuckyAPI MODLOADER > Mod found: " + found_name)
                 load_folder(mods_dir.plus_file(found_name), found_name, "mod_" + found_name)
-                var mod_script := load("res://" + found_name + "/mod.gd")
-                var mod := mod_script.new()
-                var info := load_info("res://" + found_name + "/mod.json", found_name)
+            elif found_name.get_extension() == "zip":
+                load_zip(mods_dir.plus_file(found_name), found_name.get_basename(), "mod_" + found_name.get_basename())
+                mod_name = found_name.get_basename()
+            elif found_name.get_extension() == "pck":
+                load_pck(mods_dir.plus_file(found_name), found_name.get_basename())
+                mod_name = found_name.get_basename()
+            else:
+                continue
+            
+            print("LuckyAPI MODLOADER > Mod found: " + mod_name)
+            var mod_script := load("res://" + mod_name + "/mod.gd")
+            var mod := mod_script.new()
+            var info := load_info("res://" + mod_name + "/mod.json", mod_name)
 
-                mods[found_name] = mod
-                mod_info[found_name] = info
-                mod_content[found_name] = {
-                    "symbols": [],
-                    "symbol_patches": []
-                }
+            mods[mod_name] = mod
+            mod_info[mod_name] = info
+            mod_content[mod_name] = {
+                "symbols": [],
+                "symbol_patches": []
+            }
 
-                mod_count += 1
-                print("LuckyAPI MODLOADER > Mod loaded: " + found_name)
-                                
+            mod_count += 1
+            print("LuckyAPI MODLOADER > Mod loaded: " + mod_name)
+
             found_name = _dir.get_next()
     
     for mod_id in mod_info.keys():

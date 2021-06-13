@@ -367,7 +367,30 @@ func save_and_pack_resource(packer: PCKPacker, res: Resource, target_path: Strin
 func force_reload(resource_path: String):
     var new := ResourceLoader.load(resource_path, "", true)
     new.take_over_path(resource_path)
+
+func load_pck(path: String, name := "content"):
+    _assert(ProjectSettings.load_resource_pack(path, true), "Failed to load " + name + "!")
+
+func load_zip(path: String, load_folder: String, name := "content"):
+    var gdunzip := load("res://modloader/lib/gdunzip.gd").new()
     
+    var folder := "user://_luckyapi_patched/unzipped".plus_file(name)
+    _assert(gdunzip.load(path), "Failed to unzip " + name + "!")
+    ensure_dir_exists("user://_luckyapi_patched/unzipped")
+    ensure_dir_exists(folder)
+
+    for file in gdunzip.files:
+        var trimmed := file.trim_prefix(load_folder.plus_file(""))
+        var uncompressed := gdunzip.uncompress(file)
+
+        if not uncompressed:
+            continue
+        
+        ensure_dir_exists(folder.plus_file(trimmed.get_base_dir()))
+        write_buffer(folder.plus_file(trimmed), uncompressed)
+    
+    load_folder(folder, load_folder, name)
+
 func load_folder(path: String, folder: String, name := "content"):
     var pck_file := "user://_luckyapi_patched".plus_file(name + ".pck")
 
@@ -376,6 +399,7 @@ func load_folder(path: String, folder: String, name := "content"):
     recursive_pack(packer, path, "res://".plus_file(folder))
     _assert(packer.flush(true) == OK, "Failed to write to " + name + "!")
     _assert(ProjectSettings.load_resource_pack(pck_file, true), "Failed to load " + name + "!")
+
 
 func recursive_pack(packer: PCKPacker, path: String, packer_path: String):
     var dir := Directory.new()
@@ -420,6 +444,12 @@ func write_text(file_path: String, text: String):
     var data_file := File.new()
     _assert(data_file.open(file_path, File.WRITE_READ) == OK, "Failed to open " + file_path + " for writing!")
     data_file.store_string(text)
+    data_file.close()
+
+func write_buffer(file_path: String, buffer: PoolByteArray):
+    var data_file := File.new()
+    _assert(data_file.open(file_path, File.WRITE_READ) == OK, "Failed to open " + file_path + " for writing!")
+    data_file.store_buffer(buffer)
     data_file.close()
 
 func read_json(file_path: String):
