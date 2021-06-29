@@ -5,7 +5,7 @@ const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.2.0"
-const expected_versions := ["v0.7.2"]
+const expected_versions := ["v0.8.9"]
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
@@ -36,6 +36,7 @@ func add_mod_symbol(path: String, params := {}):
     if current_mod_name != "":
         mod_symbol.mod_name = current_mod_name
         mod_content[current_mod_name].symbols.push_back(mod_symbol)
+    
     _assert(check_extends(script, "res://modloader/ModSymbol.gd"), "Mod symbol " + id + " does not extend ModSymbol.gd!")
 
     databases.icon_texture_database[id] = mod_symbol.texture
@@ -86,10 +87,12 @@ func add_symbol_patch(path: String, params := {}):
     var id := symbol_patch.id
     if not symbol_patches.has(id):
         symbol_patches[id] = []
+    
     symbol_patches[id].push_back(symbol_patch)
     if current_mod_name != "":
         symbol_patch.mod_name = current_mod_name
         mod_content[current_mod_name].symbol_patches.push_back(symbol_patch)
+    
     _assert(check_extends(script, "res://modloader/SymbolPatcher.gd"), "Symbol patcher " + id + " does not extend SymbolPatcher.gd!")
 
     if databases.tile_database.has(id):

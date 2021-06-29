@@ -130,3 +130,18 @@ func add_cards(f_rarities):
             c.rect_position.y = container.rect_size.y / 2 - tallest_height
             width_so_far += 79
         card_pool.clear()
+
+func update_rent_values():
+    .update_rent_values()
+    modify_rent_values()
+
+func modify_rent_values():
+    for mod_id in modloader.mod_load_order:
+        var mod := modloader.mods[mod_id]
+        if mod.has_method("modify_rent_cost"):
+            rent_values[0] = mod.modify_rent_cost(rent_values[0], times_rent_paid + 1)
+
+    for mod_id in modloader.mod_load_order:
+        var mod := modloader.mods[mod_id]
+        if mod.has_method("modify_rent_spins"):
+            rent_values[1] = mod.modify_rent_spins(rent_values[1], times_rent_paid + 1)

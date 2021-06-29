@@ -27,3 +27,8 @@ func new_game():
     .new_game()
 
     modloader.generate_starting_symbols()
+
+func reset_values():
+    .reset_values()
+
+    modloader.globals.reels.modify_rent_values()
