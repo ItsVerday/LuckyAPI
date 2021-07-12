@@ -468,6 +468,7 @@ func _assert(condition: bool, message: String):
 func _halt(message: String):
     push_error("LuckyAPI MODLOADER > Runtime Error: " + message)
 
+    OS.alert("LuckyAPI Modloader has encountered an error!\n" + message + "\nJoin our discord at https://discord.gg/7ZncdvbXp7 for assistance.")
     var n = null
     n.fail_runtime_check()
 

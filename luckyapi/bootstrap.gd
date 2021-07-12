@@ -80,6 +80,7 @@ func _assert(condition: bool, message: String):
 # When called, will halt the game with an error message.
 func _halt(message: String):
     push_error("LuckyAPI BOOTSTRAP > Runtime Error: " + message)
+    OS.alert("LuckyAPI Bootstrap has encountered an error!\n" + message + "\nJoin our discord at https://discord.gg/7ZncdvbXp7 for assistance.")
 
     var n = null
     n.fail_runtime_check()
