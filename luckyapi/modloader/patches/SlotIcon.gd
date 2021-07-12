@@ -258,12 +258,13 @@ func do_diff(c, target, c_tbe):
                 else:
                     target.set_non_persistent_data(key, target.get_non_persistent_data(key, 1) * c.lapi_value)
     
-    if c.sub_effects.size() > 0:
-        var arr := []
-        for sub in c.sub_effects:
-            arr.push_back(sub.effect_dictionary)
-        
-        check_conditional_effects(arr)
+    if c.has("sub_effects"):
+        if c.sub_effects.size() > 0:
+            var arr := []
+            for sub in c.sub_effects:
+                arr.push_back(sub.effect_dictionary)
+            
+            check_conditional_effects(arr)
 
 func get_persistent_data(key: String, default := 0):
     if persistent_data.has(key):
