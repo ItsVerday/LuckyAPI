@@ -76,7 +76,7 @@ func random(lower: float, upper: float):
     randomize()
     return rand_range(lower, upper)
 
-func array_pick(arr):
+func array_pick(arr: Array):
     return arr[floor(random(0, arr.size()))]
 
 func get_names_list(arr: Array):
@@ -516,7 +516,7 @@ func effect():
     return SymbolEffect.new()
 
 class SymbolEffect:
-    var effect_dictionary := {"comparisons": [], "tiles_to_add": [], "items_to_add": []}
+    var effect_dictionary := {"comparisons": [], "tiles_to_add": [], "items_to_add": [], "sub_effects": []}
     
     func if_value_random(value_index: int):
         effect_dictionary.comparisons.push_back({"a": "values", "value_num": value_index, "rand": true})
@@ -870,4 +870,8 @@ class SymbolEffect:
         effect_dictionary.lapi_value = value
         effect_dictionary.lapi_persistent = false
         effect_dictionary.lapi_operation = "mult"
+        return self
+    
+    func sub(sub_effect: SymbolEffect):
+        effect_dictionary.sub_effects.push_back(sub_effect)
         return self
