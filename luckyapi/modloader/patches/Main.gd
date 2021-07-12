@@ -31,4 +31,4 @@ func new_game():
 func reset_values():
     .reset_values()
 
-    modloader.globals.reels.modify_rent_values()
+    modloader.globals.pop_up.modify_rent_values()
