@@ -279,6 +279,10 @@ func after_start():
     print("LuckyAPI MODLOADER > Initialization complete!")
 
     datadump()
+    for mod_id in mod_load_order:
+        var mod := mods[mod_id]
+        if mod.has_method("on_post_initialize"):
+            mod.on_post_initialize(self, tree)
 
 func load_mods():
     print("LuckyAPI MODLOADER > Loading mods...")
