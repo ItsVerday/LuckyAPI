@@ -5,7 +5,7 @@ const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.2.0"
-const expected_versions := ["v0.8.11"]
+const expected_versions := ["v0.9"]
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
@@ -235,11 +235,11 @@ func before_start():
 
     var main_script := extract_script(load("res://Main.tscn"), "Main").source_code
     var regex := RegEx.new()
-    regex.compile("\\s*var\\s*content_patch_num\\s*=\\s*(\\d*)\\n\\s*var\\s*hotfix_num\\s*=\\s*(\\d*)")
+    regex.compile("\\s*content_patch_num\\s*=\\s*(\\d*)")
     var matched_version := regex.search(main_script)
     _assert(matched_version != null, "Version check failed: Unable to determine game version. This modloader is for game versions " + str(expected_versions) + "!")
 
-    game_version = "v0." + str(matched_version.get_string(1)) + "." + str(matched_version.get_string(2))
+    game_version = "v0." + str(matched_version.get_string(1))
     print("LuckyAPI MODLOADER > Game version " + game_version)
     _assert(expected_versions.find(game_version) > -1, "Version mismatch: This modloader is for version '" + str(expected_versions) + "' but the game is running version '" + game_version + "'!")
 
