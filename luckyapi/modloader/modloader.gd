@@ -204,6 +204,8 @@ func generate_starting_symbols():
         symbols.push_back("dud")
     if globals.pop_up.current_floor >= 7:
         symbols.push_back("dud")
+    if globals.pop_up.current_floor >= 11:
+        symbols.push_back("dud")
 
     for mod_id in modloader.mod_load_order:
         var mod := modloader.mods[mod_id]
