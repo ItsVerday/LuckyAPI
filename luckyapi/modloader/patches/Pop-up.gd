@@ -1,6 +1,8 @@
 extends "res://Pop-up_Pop-up.gd"
 
+
 onready var modloader: Reference = get_tree().modloader
+onready var comfy_pillow_trigger = 0
 
 func option_is_findable(type):
     return modloader.can_find_symbol(type)
