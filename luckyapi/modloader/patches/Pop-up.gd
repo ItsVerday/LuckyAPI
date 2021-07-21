@@ -10,7 +10,7 @@ func option_is_findable(type):
 func add_cards(f_rarities):
     var email = emails[0]
     var database
-
+    
     if not visible:
         var card_pool
         var r_chances
@@ -32,10 +32,13 @@ func add_cards(f_rarities):
                 for i in card_pool[c].duplicate(true):
                     if not option_is_findable(i):
                         card_pool[c].erase(i)
+            
             r_chances = $"/root/Main/".rarity_chances["symbols"].duplicate(true)
             database = $"/root/Main/".tile_database
             for r in r_chances.keys():
                 r_chances[r] *= rarity_bonuses["symbols"][r]
+            if not $"/root/Main/Stats Sprite/Stats".essences_unlocked:
+                card_pool[database["essence_capsule"].rarity].erase("essence_capsule")
         elif email.type == "add_item":
             symbols_to_choose_from = 3
             database = $"/root/Main/".item_database
@@ -43,16 +46,25 @@ func add_cards(f_rarities):
             for i in $"/root/Main/Items".items:
                 card_pool[i.rarity].erase(i.type)
             for i in $"/root/Main/Items".destroyed_items:
-                card_pool[database[i].rarity].erase(i)
+                if database[i].rarity != "essence":
+                    card_pool[database[i].rarity].erase(i)
             r_chances = $"/root/Main/".rarity_chances["items"].duplicate(true)
             for r in r_chances.keys():
                 r_chances[r] *= rarity_bonuses["items"][r]
-            if comfy_pillow_trigger:
-                email.extra_values = {"forced_rarity": []}
-                for i in range($"/root/Main".item_database["comfy_pillow"].values[1]):
-                    email.extra_values.forced_rarity.push_back("rare")
-                comfy_pillow_trigger = false
-                
+            if email.extra_values.hash() != {"forced_rarity": ["essence", "essence", "essence"]}.hash():
+                if comfy_pillow_triggers > 0:
+                    email.extra_values = {"forced_rarity": []}
+                    for i in range(comfy_pillow_triggers):
+                        email.extra_values.forced_rarity.push_back("rare")
+                    comfy_pillow_triggers = 0
+                if comfy_pillow_essence_triggers > 0:
+                    email.extra_values = {"forced_rarity": []}
+                    for i in range(comfy_pillow_essence_triggers):
+                        email.extra_values.forced_rarity.push_back("very_rare")
+                    comfy_pillow_essence_triggers = 0
+            if not $"/root/Main/Stats Sprite/Stats".essences_unlocked:
+                card_pool[database["dishwasher"].rarity].erase("dishwasher")
+                card_pool[database["popsicle"].rarity].erase("popsicle")
         for c in range(symbols_to_choose_from):
             var rarity
             var card = preload("res://Card.tscn").instance()
@@ -68,7 +80,7 @@ func add_cards(f_rarities):
                     if c == 0:
                         forced_rarity_arr.shuffle()
                 
-                if c < forced_rarity_arr.size() and ((email.extra_values.has("or_better") and not email.extra_values.or_better) or (not email.extra_values.has("or_better"))) and card_pool[forced_rarity_arr[c]].size() > 0:
+                if c < forced_rarity_arr.size() and ((email.extra_values.has("or_better") and not email.extra_values.or_better) or (not email.extra_values.has("or_better"))):
                     rarity = forced_rarity_arr[c]
                 elif rand_num < r_chances.very_rare and card_pool["very_rare"].size() > 0:
                     rarity = "very_rare"
@@ -79,16 +91,20 @@ func add_cards(f_rarities):
                 elif card_pool["common"].size() > 0:
                     rarity = "common"
                     
-                if rarity != null:
-                    if c < forced_rarity_arr.size() and email.extra_values.has("or_better") and email.extra_values.or_better:
-                        var rarity_order = ["common", "uncommon", "rare", "very_rare"]
-                        if rarity_order.find(forced_rarity_arr[c]) > rarity_order.find(rarity):
-                            rarity = forced_rarity_arr[c]
-                    
-                    randomize()
-                    var c_type = card_pool[rarity][floor(rand_range(0, card_pool[rarity].size()))]
-                    card.data = database[c_type]
-                    card_pool[rarity].erase(card.data.type)
+                if c < forced_rarity_arr.size() and email.extra_values.has("or_better") and email.extra_values.or_better:
+                    var rarity_order = ["common", "uncommon", "rare", "very_rare"]
+                    if rarity_order.find(forced_rarity_arr[c]) > rarity_order.find(rarity):
+                        rarity = forced_rarity_arr[c]
+                        
+#					for i in reels.items:
+#						if i.type == "ancient_lizard_blade":
+#							for r in reels.reels:
+#								for z in r.icons:
+#									card_pool[rarity].erase(z.type)
+#							break
+                randomize()
+                if rarity != null and card_pool[rarity].size() > 0:
+                    card.data = database[card_pool[rarity][floor(rand_range(0, card_pool[rarity].size()))]]
                 elif email.type == "add_item":
                     if c < forced_rarity_arr.size() and ((email.extra_values.has("or_better") and not email.extra_values.or_better) or (not email.extra_values.has("or_better"))):
                         rarity = forced_rarity_arr[c]
@@ -109,9 +125,12 @@ func add_cards(f_rarities):
                             card.data = database["horseshoe"]
                         "common":
                             card.data = database["pool_ball"]
+                        "essence":
+                            card.data = database["pool_ball_essence"]
                 else:
                     card.data = database["coin"]
-                
+                if rarity != null:
+                    card_pool[rarity].erase(card.data.type)
                 saved_card_types.push_back(card.data.type)
                 cards.push_back(card)
             else:
