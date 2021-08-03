@@ -8,6 +8,7 @@ var value_text_color := "<color_E14A68>"
 var has_effects := false
 var persistent_data := {}
 var non_persistent_data := {}
+var old_translate := 0
 
 func _ready():
     ._ready()
@@ -98,6 +99,21 @@ func play_sfx(symbol, symbol_type, sfx_type):
         player.volume_db = $"/root/Main/Options Sprite/Options".sfx.goal_volume
         if player.volume_db > -80 and not ($"/root/Main/Options Sprite/Options".mute_while_in_background and not $"/root/Main".window_focus):
             player.play()
+
+func set_texture(texture):
+    .set_texture(texture)
+    update_scaling(texture)
+
+func update_scaling(texture):
+    var scaling_factor := 12 / float(max(texture.get_width(), texture.get_height()))
+    scale = Vector2(scaling_factor, scaling_factor)
+    var translate := (1 - scaling_factor) * 14
+    self.offset = Vector2(self.offset.x + translate - old_translate, self.offset.y + translate - old_translate)
+    self.base_offset = Vector2(self.base_offset.x + translate - old_translate, self.base_offset.y + translate - old_translate)
+    old_translate = translate
+
+func update():
+    .update()
 
 func get_adjacent_icons():
     var grid_position := self.grid_position
@@ -283,3 +299,6 @@ func get_non_persistent_data(key: String, default := 0):
 
 func set_non_persistent_data(key: String, value):
     non_persistent_data[key] = value
+
+func condition(cond):
+    return modloader.symbol_condition(self.type, cond)

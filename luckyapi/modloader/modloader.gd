@@ -277,10 +277,12 @@ func patch_preload():
 func after_start():
     load_mods()
     add_all_tags_in_descriptions()
+    datadump()
+    post_initialize()
 
     print("LuckyAPI MODLOADER > Initialization complete!")
 
-    datadump()
+func post_initialize():
     for mod_id in mod_load_order:
         var mod := mods[mod_id]
         if mod.has_method("on_post_initialize"):

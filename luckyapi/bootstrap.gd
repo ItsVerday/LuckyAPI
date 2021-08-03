@@ -1,17 +1,17 @@
 extends SceneTree
 
-var modloader = null
+var modloader := null
 var exe_dir := OS.get_executable_path().get_base_dir()
+var main_scene := ProjectSettings.get_setting("application/run/main_scene")
 
 # The main function for the bootstrap. Called automatically by the engine.
 func _initialize():
     print("LuckyAPI BOOTSTRAP > Executable directory: " + exe_dir)
     print("LuckyAPI BOOTSTRAP > Godot version: " + Engine.get_version_info().string)
-
     # Make sure the patching directory exists and is ready to go.
     ensure_dir_exists("user://_luckyapi_patched")
 
-    # Load the files in the luckyapi/modloader folder into the game.
+    # Load the files in luckyapi/the modloader folder into the game.
     load_folder(exe_dir.plus_file("luckyapi/modloader"), "modloader")
 
     # Initialize the modloader, and run its before_start() method.
@@ -22,7 +22,7 @@ func _initialize():
 
     # Start the actual game.
     print("LuckyAPI BOOTSTRAP > Starting game...")
-    change_scene(ProjectSettings.get_setting("application/run/main_scene"))
+    change_scene(main_scene)
 
     # Setup the after_start listener so the modloader's after_start() method can be called appropriately.
     connect("node_added", self, "after_start", [], CONNECT_DEFERRED | CONNECT_ONESHOT)

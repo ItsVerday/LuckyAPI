@@ -114,6 +114,88 @@ func can_find_symbol(type):
     
     return true
 
+func get_symbol_groups(symbol_id: String):
+    var groups := []
+    for group_id in modloader.databases.group_database.symbols:
+        if modloader.databases.group_database.symbols[group_id].find(symbol_id) > -1:
+            groups.push_back(group_id)
+    
+    return groups
+
+func get_symbol_rarity(symbol_id: String):
+    for rarity in modloader.databases.rarity_database.symbols:
+        if modloader.databases.rarity_database.symbols[rarity].find(symbol_id) > -1:
+            return rarity
+    
+    return null
+
+func symbol_condition(symbol_id: String, condition):
+    var negate := false
+    if condition.has("negate"):
+        negate = condition.negate
+    
+    if condition.has("and"):
+        for inner_condition in condition["and"]:
+            if not symbol_condition(symbol_id, inner_condition):
+                return negate
+        
+        return not negate
+
+    if condition.has("or"):
+        for inner_condition in condition["or"]:
+            if symbol_condition(symbol_id, inner_condition):
+                return not negate
+        
+        return negate
+
+    if condition.has("type"):
+        if not match_value(symbol_id, condition.type):
+            return negate
+
+    if condition.has("not_type"):
+        if match_value(symbol_id, condition.not_type):
+            return negate
+
+    if condition.has("group"):
+        var group_match := false
+        var groups := get_symbol_groups(symbol_id)
+
+        if groups.size() > 0:
+            for symbol_group in groups:
+                if match_value(symbol_group, condition.group):
+                    group_match = true
+                    break
+        else:
+            group_match = match_value("nogroup", condition.group)
+        
+        if not group_match:
+            return negate
+    
+    if condition.has("not_group"):
+        var group_match := false
+        var groups := get_symbol_groups(symbol_id)
+
+        if groups.size() > 0:
+            for symbol_group in groups:
+                if match_value(symbol_group, condition.not_group):
+                    group_match = true
+                    break
+        else:
+            group_match = match_value("nogroup", condition.not_group)
+        
+        if group_match:
+            return negate
+
+    if condition.has("rarity"):
+        if not match_value(get_symbol_rarity(symbol_id), condition.rarity):
+            return negate
+
+    if condition.has("not_rarity"):
+        if match_value(get_symbol_rarity(symbol_id), condition.not_rarity):
+            return negate
+    
+    return not negate
+
 func match_value(value: String, match_against):
     if match_against is String:
         if match_against == "*":
@@ -236,41 +318,12 @@ func list_symbols(source, filters := {}):
     
     _assert(symbols is Array, "list_symbols source is not a valid string or symbol array!")
 
-    if filters.has("type"):
-        var new_symbols := []
-        for symbol in symbols:
-            if match_value(symbol.type, filters.type):
-                new_symbols.push_back(symbol)
-        
-        symbols = new_symbols
+    var new_symbols := []
+    for symbol in symbols:
+        if symbol_condition(symbol.type, filters):
+            new_symbols.push_back(symbol)
 
-    if filters.has("group"):
-        var new_symbols := []
-        for symbol in symbols:
-            var group_match := false
-
-            if symbol.groups.size() > 0:
-                for symbol_group in symbol.groups:
-                    if match_value(symbol_group, filters.group):
-                        group_match = true
-                        break
-            else:
-                group_match = match_value("nogroup", filters.group)
-            
-            if group_match:
-                new_symbols.push_back(symbol)
-        
-        symbols = new_symbols
-
-    if filters.has("rarity"):
-        var new_symbols := []
-        for symbol in symbols:
-            if match_value(symbol.rarity, filters.rarity):
-                new_symbols.push_back(symbol)
-        
-        symbols = new_symbols
-
-    return symbols
+    return new_symbols
 
 func count_symbols(source, filters := {}):
     return list_symbols(source, filters).size()
