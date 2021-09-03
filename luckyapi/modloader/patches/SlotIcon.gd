@@ -152,39 +152,59 @@ func get_adjacent_icons():
     adjacent.erase(self)
     return adjacent
 
-func update_value_text():
-    if mod_symbol != null:
-        mod_symbol.update_value_text(self, self.values)
-        if self.permanent_bonus > 0 and not destroyed:
-            get_child(3).raw_string = "<color_" + $"/root/Main/Options Sprite/Options".colors3["symbol_bonus_text"] + ">+" + str(self.permanent_bonus) + "<end>"
-            get_child(3).force_update = true
-            displayed_text_value = str(self.permanent_bonus)
-        if self.value_text > 0 and not destroyed:
-            get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
-            get_child(1).force_update = true
-            displayed_text_value = str(self.value_text)
-        else:
-            get_child(1).raw_string = ""
-            displayed_text_value = ""
-    else:
-        .update_value_text()
-
-    var patches := modloader.symbol_patches[self.type]
-    if patches != null:
-        for patch in patches:
+    func update_value_text():
+        if mod_symbol != null and mod_symbol.update_value_text:
+            mod_symbol.update_value_text(self, self.values)
             if self.permanent_bonus > 0 and not destroyed:
-                get_child(3).raw_string = "<color_" + $"/root/Main/Options Sprite/Options".colors3["symbol_bonus_text"] + ">+" + str(self.permanent_bonus) + "<end>"
+                get_child(3).raw_string = self.bonus_text_color + "+" + str(self.permanent_bonus) + "<end>"
                 get_child(3).force_update = true
-                displayed_text_value = str(self.permanent_bonus)
-            if patch.has_method("update_value_text"):
-                patch.update_value_text(self, self.values)
-                if self.value_text > 0 and not destroyed:
-                    get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
-                    get_child(1).force_update = true
-                    displayed_text_value = str(self.value_text)
-                else:
-                    get_child(1).raw_string = ""
-                    displayed_text_value = ""
+                displayed_bonus_value = str(self.permanent_bonus)
+            else:
+                get_child(3).raw_string = ""
+                displayed_bonus_value = ""
+            if self.symbol_multiplier_text > 0 and not destroyed:
+                get_child(2).raw_string = self.bonus_text_color + "x" + str(self.symbol_multiplier_text) + "<end>"
+                get_child(2).force_update = true
+                displayed_multiplier_value = str(self.symbol_multiplier_text)
+            else:
+                get_child(2).raw_string = ""
+                displayed_multiplier_value = ""
+            if self.value_text > 0 and not destroyed:
+                get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
+                get_child(1).force_update = true
+                displayed_text_value = str(self.value_text)
+            else:
+                get_child(1).raw_string = ""
+                displayed_text_value = ""
+        else:
+            .update_value_text()
+    
+        var patches := modloader.symbol_patches[self.type]
+        if patches != null:
+            for patch in patches:
+                if patch.has_method("update_value_text"):
+                    patch.update_value_text(self, self.values)
+                    if self.permanent_bonus > 0 and not destroyed:
+                        get_child(3).raw_string = self.bonus_text_color + "+" + str(self.permanent_bonus) + "<end>"
+                        get_child(3).force_update = true
+                        displayed_bonus_value = str(self.permanent_bonus)
+                    else:
+                        get_child(3).raw_string = ""
+                        displayed_bonus_value = ""
+                    if self.symbol_multiplier_text > 0 and not destroyed:
+                        get_child(2).raw_string = self.bonus_text_color + "x" + str(self.symbol_multiplier_text) + "<end>"
+                        get_child(2).force_update = true
+                        displayed_multiplier_value = str(self.symbol_multiplier_text)
+                    else:
+                        get_child(2).raw_string = ""
+                        displayed_multiplier_value = ""
+                    if self.value_text > 0 and not destroyed:
+                        get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
+                        get_child(1).force_update = true
+                        displayed_text_value = str(self.value_text)
+                    else:
+                        get_child(1).raw_string = ""
+                        displayed_text_value = ""
 
 func add_conditional_effects():
     var adj_icons := self.get_adjacent_icons()
