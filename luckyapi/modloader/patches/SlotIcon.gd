@@ -156,7 +156,7 @@ func update_value_text():
     if mod_symbol != null:
         mod_symbol.update_value_text(self, self.values)
         if self.permanent_bonus > 0 and not destroyed:
-            get_child(3).raw_string = self.value_text_color + "+" + str(self.permanent_bonus) + "<end>"
+            get_child(3).raw_string = "<color_FBF236>+" + str(self.permanent_bonus) + "<end>"
             get_child(3).force_update = true
             displayed_text_value = str(self.permanent_bonus)
         if self.value_text > 0 and not destroyed:
@@ -173,7 +173,7 @@ func update_value_text():
     if patches != null:
         for patch in patches:
             if self.permanent_bonus > 0 and not destroyed:
-                get_child(3).raw_string = self.value_text_color + "+" + str(self.permanent_bonus) + "<end>"
+                get_child(3).raw_string = "<color_FBF236>+" + str(self.permanent_bonus) + "<end>"
                 get_child(3).force_update = true
                 displayed_text_value = str(self.permanent_bonus)
             if patch.has_method("update_value_text"):
