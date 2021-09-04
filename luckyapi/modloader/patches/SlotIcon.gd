@@ -4,7 +4,11 @@ onready var modloader: Reference = get_tree().modloader
 var mod_symbol := null
 
 var value_text := 0
+var multiplier_text := 0
+var bonus_text := 0
 var value_text_color := "<color_E14A68>"
+var multiplier_text_color := "<color_E14A68>"
+var bonus_text_color := "<color_E14A68>"
 var has_effects := false
 var persistent_data := {}
 var non_persistent_data := {}
@@ -17,17 +21,14 @@ func _ready():
 func change_type(p_type: String, need_cond_effects: bool):
     update_mod_symbol(p_type)
     .change_type(p_type, need_cond_effects)
+    sfx_values = mod_symbol.sfx.duplicate(true) if mod_symbol else sfx_values
     persistent_data = {}
     non_persistent_data = {}
     set_texture(modloader.databases.icon_texture_database[self.type])
     update_value_text()
 
 func update_mod_symbol(new_type: String):
-    var mod_symbols := modloader.mod_symbols
-    if mod_symbols.has(new_type):
-        mod_symbol = mod_symbols[new_type]
-    else:
-        mod_symbol = null
+    mod_symbol = modloader.mod_symbols[new_type] if modloader.mod_symbols.has(new_type) else null
 
 func start_animation(anim):
     .start_animation(anim)
@@ -45,52 +46,54 @@ func start_animation(anim):
         if texture != null:
             set_texture(texture)
 
-func play_sfx(symbol, symbol_type, sfx_type):
-    symbol.update_mod_symbol(symbol_type)
-    var player := symbol.sfx_player
-    var sfx_total_num := 0
-    var db := modloader.databases.sfx_database["symbols"]
-
+func play_sfx(symbol, sfx_type):
+    if $"/root/Main/Options Sprite/Options".animation_speed == 0 and reels.sfx_timer > 0:
+        delayed_sfx.push_back([symbol, sfx_type])
+        return
+    var player = symbol.sfx_player
+    var symbol_type = symbol.type
+    
     if symbol.prev_data.size() > 0:
         symbol_type = symbol.prev_data[symbol.prev_data.size() - 1].type
-	
-    var mod_symbols := modloader.mod_symbols
-    var mod_symbol := null
-    if mod_symbols.has(symbol_type):
-        mod_symbol = mod_symbols[symbol_type]
     
-    if mod_symbol == null:
-        if db.has(symbol_type) and db[symbol_type].has(sfx_type):
-            sfx_total_num = db[symbol_type][sfx_type]
-    else:
-        sfx_total_num = mod_symbol.sfx[sfx_type]
-
-    var sfx_directory := ""
-    var sfx_redirect := null
-    if mod_symbol != null:
-        sfx_directory = mod_symbol.mod_name + "/"
-
-        for test_sfx_redirect in mod_symbol.sfx_redirects:
-            if sfx_type == test_sfx_redirect.new_sfx:
-                sfx_redirect = test_sfx_redirect
+    var new_mod_symbol = modloader.mod_symbols[symbol_type] if modloader.mod_symbols.has(symbol_type) else mod_symbol
+    var patches = modloader.symbol_patches[symbol_type]
     
-    var sfx := null
-    if sfx_redirect == null:
-        var sfx_string := symbol_type + "-" + sfx_type + str(floor(rand_range(0, sfx_total_num)))
-        if sfx_directory == "":
-            sfx = load("res://sfx/%s.wav" % (str(sfx_string)))
+    if !new_mod_symbol and !patches:
+        .play_sfx(symbol, sfx_type)
+        return
+    
+    var sfx_type_clean = sfx_type if sfx_type else new_mod_symbol.sfx[0]
+    var sfx_directory : String = ""
+    
+    if new_mod_symbol:
+        if new_mod_symbol.sfx.has(sfx_type_clean):
+            if new_mod_symbol.sfx_override.has(sfx_type_clean):
+                sfx_directory += new_mod_symbol.mod_name + "/"
         else:
-            sfx = modloader.load_wav("res://" + sfx_directory + "sfx/%s.wav" % (str(sfx_string)))
-    else:
-        symbol_type = sfx_redirect.old_symbol
-        var new_sfx_type := sfx_redirect.old_sfx
-        sfx_total_num = db[symbol_type][new_sfx_type]
-        var sfx_string := symbol_type + "-" + new_sfx_type + str(floor(rand_range(0, sfx_total_num)))
-        sfx = load("res://sfx/%s.wav" % (str(sfx_string)))
-
+            .play_sfx(symbol, new_mod_symbol.default_sound)
+    
+    if patches:
+        patches.invert() # we only care about applying the last patch that updates this value
+        var found = false
+        for patch in patches:
+            if patch.sfx.has(sfx_type_clean):
+                found = true
+                sfx_directory = ""
+                if patch.sfx_override.has(sfx_type_clean):
+                    sfx_directory += patch.mod_name + "/"
+                break
+        if !found:
+            .play_sfx(symbol, new_mod_symbol.default_sound)
+    
+    var db = modloader.databases.sfx_database["symbols"]
+    var sfx_total_num = db[sfx_type_clean] if db.has(sfx_type_clean) else 0
+    var sfx_string = sfx_type_clean + str(floor(rand_range(0, sfx_total_num)))
+    var sfx = load("res://%ssfx/%s.wav" % [sfx_directory, sfx_string])
+	
     if sfx != null:
         player.set_stream(sfx)
-        if symbol_type == "dog":
+        if sfx_type_clean == "dogpet":
             player.stream.loop_begin = 15159
             player.stream.loop_end = 46494
         else:
@@ -99,6 +102,7 @@ func play_sfx(symbol, symbol_type, sfx_type):
         player.volume_db = $"/root/Main/Options Sprite/Options".sfx.goal_volume
         if player.volume_db > -80 and not ($"/root/Main/Options Sprite/Options".mute_while_in_background and not $"/root/Main".window_focus):
             player.play()
+            reels.sfx_timer = 1
 
 func set_texture(texture):
     .set_texture(texture)
@@ -153,38 +157,30 @@ func get_adjacent_icons():
     return adjacent
 
 func update_value_text():
-    if mod_symbol != null:
-        mod_symbol.update_value_text(self, self.values)
-        if self.permanent_bonus > 0 and not destroyed:
-            get_child(3).raw_string = "<color_" + $"/root/Main/Options Sprite/Options".colors3["symbol_bonus_text"] + ">+" + str(self.permanent_bonus) + "<end>"
-            get_child(3).force_update = true
-            displayed_text_value = str(self.permanent_bonus)
-        if self.value_text > 0 and not destroyed:
-            get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
-            get_child(1).force_update = true
-            displayed_text_value = str(self.value_text)
-        else:
-            get_child(1).raw_string = ""
-            displayed_text_value = ""
-    else:
-        .update_value_text()
-
-    var patches := modloader.symbol_patches[self.type]
-    if patches != null:
+    .update_value_text()
+    
+    if mod_symbol and mod_symbol.has_method("update_value_text"):
+        update_value_text_inner(mod_symbol)
+    var patches = modloader.symbol_patches[self.type]
+    if patches:
         for patch in patches:
-            if self.permanent_bonus > 0 and not destroyed:
-                get_child(3).raw_string = "<color_" + $"/root/Main/Options Sprite/Options".colors3["symbol_bonus_text"] + ">+" + str(self.permanent_bonus) + "<end>"
-                get_child(3).force_update = true
-                displayed_text_value = str(self.permanent_bonus)
             if patch.has_method("update_value_text"):
-                patch.update_value_text(self, self.values)
-                if self.value_text > 0 and not destroyed:
-                    get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
-                    get_child(1).force_update = true
-                    displayed_text_value = str(self.value_text)
-                else:
-                    get_child(1).raw_string = ""
-                    displayed_text_value = ""
+                update_value_text_inner(patch)
+
+func update_value_text_inner(symbol):
+    symbol.update_value_text(self, self.values)
+    if self.value_text and not destroyed:
+        get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
+        get_child(1).force_update = true
+        displayed_text_value = str(self.value_text)
+    if self.multiplier_text and not destroyed:
+        get_child(2).raw_string = self.multiplier_text_color + "x" + str(self.multiplier_text) + "<end>"
+        get_child(2).force_update = true
+        displayed_multiplier_value = str(self.multiplier_text)
+    if self.bonus_text and not destroyed:
+        get_child(3).raw_string = self.bonus_text_color + "+" + str(self.bonus_text) + "<end>"
+        get_child(3).force_update = true
+        displayed_bonus_value = str(self.bonus_text)
 
 func add_conditional_effects():
     var adj_icons := self.get_adjacent_icons()
@@ -210,6 +206,7 @@ func add_effect(effect):
 
 func add_effect_to_symbol(y, x, effect):
     if effect.effect_dictionary != null:
+        self.texture_type = self.type
         .add_effect_to_symbol(y, x, effect.effect_dictionary)
     else:
         .add_effect_to_symbol(y, x, effect)

@@ -638,7 +638,15 @@ class SymbolEffect:
             effect_dictionary.comparisons.push_back({"a": "destroyed", "b": compare})
         
         return self
-    
+
+    func if_tbd(compare := true, not_prev := false):
+        if not_prev:
+          effect_dictionary.comparisons.push_back({"a": "tbd", "b": compare, "not_prev": true})
+        else:
+          effect_dictionary.comparisons.push_back({"a": "tbd", "b": compare})
+        
+        return self
+
     func if_pointing_directions(compare):
         effect_dictionary.comparisons.push_back({"a": "pointing_directions", "b": compare})
         return self
@@ -862,9 +870,10 @@ class SymbolEffect:
     func add_permanent_bonus(diff: int):
         return self.add_to_value("permanent_bonus", diff)
     
-    func animate(animation: String, sfx_type := "default", targets := []):
+    func animate(animation: String, sfx_type := "", targets := []):
         effect_dictionary.anim = animation
-        effect_dictionary.sfx_type = sfx_type
+        if sfx_type:
+            effect_dictionary.sfx_type = sfx_type
         if targets.size() > 0:
             effect_dictionary.anim_targets = targets
         return self

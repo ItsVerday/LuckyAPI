@@ -5,7 +5,7 @@ const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
 const modloader_version := "v0.2.0"
-const expected_versions := ["v0.10"]
+const expected_versions := ["v0.11"]
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
@@ -48,7 +48,8 @@ func add_mod_symbol(path: String, params := {}):
         "value": mod_symbol.value,
         "values": mod_symbol.values,
         "groups": mod_symbol.groups,
-        "rarity": mod_symbol.rarity
+        "rarity": mod_symbol.rarity,
+        "sfx": mod_symbol.sfx,
     }
 
     databases.sfx_database.symbols[id] = mod_symbol.sfx
