@@ -3,9 +3,9 @@ extends "res://Slot Icon_Slot Icon.gd"
 onready var modloader: Reference = get_tree().modloader
 var mod_symbol := null
 
-var value_text
-var multiplier_text
-var bonus_text
+var value_text := 0
+var multiplier_text := 0
+var bonus_text := 0
 var value_text_color := "<color_E14A68>"
 var multiplier_text_color := "<color_E14A68>"
 var bonus_text_color := "<color_E14A68>"
@@ -170,9 +170,9 @@ func get_adjacent_icons():
     return adjacent
 
 func update_value_text():
-    self.value_text = null
-    self.multiplier_text = null
-    self.bonus_text = null
+    self.value_text = 0
+    self.multiplier_text = 0
+    self.bonus_text = 0
     .update_value_text()
     
     if mod_symbol and mod_symbol.has_method("update_value_text"):
@@ -185,15 +185,15 @@ func update_value_text():
 
 func _update_value_text_inner(symbol):
     symbol.update_value_text(self, self.values)
-    if self.value_text != null and not destroyed:
+    if self.value_text and not destroyed:
         get_child(1).raw_string = self.value_text_color + str(self.value_text) + "<end>"
         get_child(1).force_update = true
         displayed_text_value = str(self.value_text)
-    if self.multiplier_text != null and not destroyed:
+    if self.multiplier_text and not destroyed:
         get_child(2).raw_string = self.multiplier_text_color + "x" + str(self.multiplier_text) + "<end>"
         get_child(2).force_update = true
         displayed_multiplier_value = str(self.multiplier_text)
-    if self.bonus_text != null and not destroyed:
+    if self.bonus_text and not destroyed:
         get_child(3).raw_string = self.bonus_text_color + "+" + str(self.bonus_text) + "<end>"
         get_child(3).force_update = true
         displayed_bonus_value = str(self.bonus_text)
