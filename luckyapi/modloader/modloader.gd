@@ -4,7 +4,7 @@ var tree: SceneTree
 const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
-const modloader_version := "v0.2.0"
+const modloader_version := "v0.3.0"
 const expected_versions := ["v0.11"]
 var game_version: String = "<game version not determined yet>"
 
