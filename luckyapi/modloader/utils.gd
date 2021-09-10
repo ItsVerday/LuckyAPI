@@ -565,11 +565,14 @@ class ModInfo:
     var load_after := []
 
 # Effect Builder API
-func effect():
-    return SymbolEffect.new()
+func effect(dict : Dictionary = {}):
+	return SymbolEffect.new(dict)
 
 class SymbolEffect:
-    var effect_dictionary := {"comparisons": [], "tiles_to_add": [], "items_to_add": [], "sub_effects": []}
+    var effect_dictionary = {"comparisons": [], "tiles_to_add": [], "items_to_add": [], "sub_effects": []}
+    
+    func _init(dict : Dictionary = {}):
+        effect_dictionary = dict if dict.keys().size() > 0 else effect_dictionary
     
     func if_value_random(value_index: int):
         effect_dictionary.comparisons.push_back({"a": "values", "value_num": value_index, "rand": true})
@@ -638,7 +641,15 @@ class SymbolEffect:
             effect_dictionary.comparisons.push_back({"a": "destroyed", "b": compare})
         
         return self
-    
+
+    func if_tbd(compare := true, not_prev := false):
+        if not_prev:
+          effect_dictionary.comparisons.push_back({"a": "tbd", "b": compare, "not_prev": true})
+        else:
+          effect_dictionary.comparisons.push_back({"a": "tbd", "b": compare})
+        
+        return self
+
     func if_pointing_directions(compare):
         effect_dictionary.comparisons.push_back({"a": "pointing_directions", "b": compare})
         return self
@@ -862,9 +873,10 @@ class SymbolEffect:
     func add_permanent_bonus(diff: int):
         return self.add_to_value("permanent_bonus", diff)
     
-    func animate(animation: String, sfx_type := "default", targets := []):
+    func animate(animation: String, sfx_type := 0, targets := []):
         effect_dictionary.anim = animation
-        effect_dictionary.sfx_type = sfx_type
+        if sfx_type:
+            effect_dictionary.sfx_type = sfx_type
         if targets.size() > 0:
             effect_dictionary.anim_targets = targets
         return self

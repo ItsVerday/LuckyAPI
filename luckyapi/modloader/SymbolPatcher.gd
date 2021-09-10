@@ -2,53 +2,55 @@ extends "res://modloader/utils.gd"
 
 var id: String
 var mod_name: String
+var sfx := []
+var sfx_overrides := {}
 
 var modifies_self_adjacency := false
 var modifies_adjacent_adjacency := false
 var modifies_global_adjacency := false
 
 func init(modloader: Reference, params):
-    self.modloader = modloader
-    print("No initialization behavior for symbol patch defined in " + self.get_script().get_path())
+	  self.modloader = modloader
+	  print("No initialization behavior for symbol patch defined in " + self.get_script().get_path())
 
 func patch_value(value: float) -> float:
-    return value
+	  return value
 
 func patch_values(values: Array, size: int) -> Array:
-    return values
+	  return values
 
 func patch_rarity(rarity: String) -> String:
-    return rarity
+	  return rarity
 
 func patch_groups(groups: Array) -> Array:
-    return groups
+	  return groups
 
 func patch_texture(texture: Texture) -> Texture:
-    return texture
+	  return texture
 
 func patch_extra_textures(extra_textures: Dictionary) -> Dictionary:
-    return extra_textures
+	  return extra_textures
 
-func patch_sfx(sfx: Dictionary) -> Dictionary:
-    return sfx
+func patch_sfx(sfx: Array) -> Array:
+	  return sfx
 
-func patch_sfx_redirects(sfx_redirects: Array) -> Array:
-    return sfx_redirects
+func patch_sfx_overrides(sfx_overrides: Dictionary) -> Dictionary:
+	  return sfx_overrides
 
 func patch_name(name: String) -> String:
-    return name
+	  return name
 
 func patch_description(description: String) -> String:
-    return description
+	  return description
 
 func modify_self_adjacency(myself, grid_position, currently_adjacent, symbol_grid):
-    return currently_adjacent
+	  return currently_adjacent
 
 func modify_adjacent_adjacency(myself, my_grid_position, to_modify, to_modify_grid_position, currently_adjacent, symbol_grid):
-    return currently_adjacent
+	  return currently_adjacent
 
 func modify_global_adjacency(myself, my_grid_position, to_modify, to_modify_grid_position, currently_adjacent, symbol_grid):
-    return currently_adjacent
+	  return currently_adjacent
 
 func can_find_symbol(symbol_grid):
-    return true
+	  return true

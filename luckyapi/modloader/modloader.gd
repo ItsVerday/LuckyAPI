@@ -4,8 +4,8 @@ var tree: SceneTree
 const ModSymbol = preload("res://modloader/ModSymbol.gd")
 const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 
-const modloader_version := "v0.2.0"
-const expected_versions := ["v0.10"]
+const modloader_version := "v0.3.0"
+const expected_versions := ["v0.11"]
 var game_version: String = "<game version not determined yet>"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
@@ -48,7 +48,8 @@ func add_mod_symbol(path: String, params := {}):
         "value": mod_symbol.value,
         "values": mod_symbol.values,
         "groups": mod_symbol.groups,
-        "rarity": mod_symbol.rarity
+        "rarity": mod_symbol.rarity,
+        "sfx": mod_symbol.sfx,
     }
 
     databases.sfx_database.symbols[id] = mod_symbol.sfx
@@ -153,12 +154,21 @@ func patch_symbol(symbol_patch, id):
         for extra_texture_key in extra_textures.keys():
             databases.icon_texture_database[id + "_" + extra_texture_key] = extra_textures[extra_texture_key]
     
-        var sfx := symbol_patch.patch_sfx(mod_symbol.sfx)
+    var sfx := databases.sfx_database.symbols[id]
+    if mod_symbol != null:
+        sfx = symbol_patch.patch_sfx(mod_symbol.sfx)
         mod_symbol.sfx = sfx
-        databases.sfx_database.symbols[id] = sfx
+    else:
+        sfx = symbol_patch.patch_sfx(sfx)
+    databases.sfx_database.symbols[id] = sfx
     
-        var sfx_redirects := symbol_patch.patch_sfx_redirects(mod_symbol.sfx_redirects)
-        mod_symbol.sfx_redirects = sfx_redirects
+    var sfx_overrides : Dictionary
+    if mod_symbol != null:
+        sfx_overrides = symbol_patch.patch_sfx_overrides(mod_symbol.sfx_overrides)
+        mod_symbol.sfx_overrides = sfx_overrides
+    else:
+        sfx_overrides = symbol_patch.patch_sfx_overrides(symbol_patch.sfx_overrides)
+        symbol_patch.sfx_overrides = sfx_overrides
     
     if mod_symbol != null:
         var name := symbol_patch.patch_name()
