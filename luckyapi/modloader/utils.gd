@@ -400,22 +400,52 @@ func add_symbol(type):
 func add_item(type):
     modloader.globals.items.add_item(type)
 
-func patch(target_path: String, new_script_path: Array, node_name: Array, packer: PCKPacker):
+var target_index := 0
+func patch_gd(target_path: String, new_script_path: String, packer: PCKPacker, force_reload: Array):
+    var script := ResourceLoader.load(target_path, "", true)
+    _assert(script is GDScript, "Script to be patched isn't a GDScript!")
+    var old_script := script.duplicate()
+
+    var extend := save_and_pack_resource(packer, old_script, target_path.trim_suffix(".gd") + str(target_index) + ".gd")
+    target_index += 1
+
+    script.source_code = read_text(new_script_path)
+    script.source_code = "extends \"" + extend + "\"\n" + script.source_code
+    save_and_pack_resource(packer, script, target_path)
+    target_index += 1
+
+    force_reload.push_back(target_path)
+    force_reload.push_back(extend)
+
+func patch_tscn(target_path: String, new_script_path: Array, node_name: Array, packer: PCKPacker, force_reload: Array, set_extends := false):
     var scene := load(target_path)
     for i in range(new_script_path.size()):
-        replace_script_and_pack_original(packer, scene, node_name[i], new_script_path[i])
+        replace_script_and_pack_original(packer, scene, node_name[i], new_script_path[i], set_extends)
+    
     save_and_pack_resource(packer, scene, target_path)
 
-func replace_script_and_pack_original(packer: PCKPacker, scene: PackedScene, node_name: String, new_script_path: String):
+    force_reload.push_back(target_path)
+
+func replace_script_and_pack_original(packer: PCKPacker, scene: PackedScene, node_name: String, new_script_path: String, set_extends: bool):
     var script := extract_script(scene, node_name)
     var old_script := script.duplicate()
     script.source_code = read_text(new_script_path)
-    save_and_pack_resource(packer, old_script, scene.resource_path.get_basename() + "_" + node_name + ".gd")
+    var target_path := scene.resource_path.get_basename() + "_" + node_name + ".gd"
+    if set_extends:
+        target_path = scene.resource_path.get_basename() + "_" + node_name + str(target_index) + ".gd"
+        target_index += 1
+
+    var extend := save_and_pack_resource(packer, old_script, target_path)
+    if set_extends:
+        script.source_code = "extends \"" + extend + "\"\n" + script.source_code
 
 func save_and_pack_resource(packer: PCKPacker, res: Resource, target_path: String):
     var save_path := "user://_luckyapi_patched/" + target_path.trim_prefix("res://").replace("/", "_").replace("\\", "_")
+    
     _assert(ResourceSaver.save(save_path, res) == OK, "Failed to save resource to " + save_path + "!")
     _assert(packer.add_file(target_path, save_path) == OK, "Failed to pack resource to " + target_path + "!")
+
+    return target_path
 
 func force_reload(resource_path: String):
     var new := ResourceLoader.load(resource_path, "", true)
@@ -556,6 +586,22 @@ func load_info(path: String, expected_id: String):
     if json.has("main"):
         mod_info.main_script = json.main
     
+    if json.has("patches"):
+        var patches := json.patches
+        for patch_file in patches.keys():
+            var patch_info := PatchInfo.new()
+            patch_info.to_patch = patch_file
+            if patch_file.ends_with(".tscn"):
+                patch_info.type = "tscn"
+                var scripts := patches[patch_file].scripts
+                for name in scripts.keys():
+                    patch_info.scripts[name] = scripts[name]
+            else:
+                patch_info.type = "gd"
+                patch_info.scripts["main"] = patches[patch_file].script
+            
+            mod_info.patches.push_back(patch_info)
+    
     return mod_info
 
 class ModInfo:
@@ -567,6 +613,12 @@ class ModInfo:
     var main_script := "mod.gd"
     var dependencies := []
     var load_after := []
+    var patches := []
+
+class PatchInfo:
+    var type := ""
+    var to_patch := ""
+    var scripts := {}
 
 # Effect Builder API
 func effect(dict : Dictionary = {}):

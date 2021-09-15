@@ -224,23 +224,6 @@ func generate_starting_symbols():
     
     starting_symbols = symbols
 
-func add_all_tags_in_descriptions():
-    for symbol_id in databases.tile_database.keys():
-        var description := translate(symbol_id + "_desc")
-        if description == symbol_id + "_desc":
-            continue
-        
-        var regex_group := RegEx.new()
-        regex_group.compile("<group_([a-zA-Z0-9_]+)> (and|or) <last_\\1>")
-        var result_group := regex_group.search(description)
-        while result_group != null:
-            var id := result_group.get_string(1)
-            var join := result_group.get_string(2)
-            description = splice(description, result_group.get_start(), result_group.get_end(), "<all_" + join + "_" + id + ">")
-            result_group = regex_group.search(description)
-        
-        add_translation(symbol_id + "_desc", description, TranslationServer.get_locale())
-
 func before_start():
     print("LuckyAPI MODLOADER > Initializing LuckyAPI " + modloader_version + "...")
     ensure_dir_exists("user://mods")
@@ -255,49 +238,8 @@ func before_start():
     print("LuckyAPI MODLOADER > Game version " + game_version)
     _assert(expected_versions.find(game_version) > -1, "Version mismatch: This modloader is for version '" + str(expected_versions) + "' but the game is running version '" + game_version + "'!")
 
-    patch_preload()
     find_mods()
-
-func patch_preload():
-    print("LuckyAPI MODLOADER > Beginning patching process...")
-
-    var packer := PCKPacker.new()
-    _assert(packer.pck_start("user://_luckyapi_patched/preload.pck") == OK, "Opening preload.pck for writing failed!")
-    patch("res://Main.tscn", ["res://modloader/patches/Main.gd", "res://modloader/patches/Title.gd", "res://modloader/patches/Reels.gd"], ["Main", "Title", "Reels"], packer)
-    patch("res://Slot Icon.tscn", ["res://modloader/patches/SlotIcon.gd"], ["Slot Icon"], packer)
-    patch("res://Tooltip.tscn", ["res://modloader/patches/Tooltip_Card.gd"], ["Card"], packer)
-    patch("res://Card.tscn", ["res://modloader/patches/Card.gd"], ["Card"], packer)
-    patch("res://Pop-up.tscn", ["res://modloader/patches/Pop-up.gd"], ["Pop-up"], packer)
-    patch("res://Reel.tscn", ["res://modloader/patches/Reel.gd"], ["Reel"], packer)
-
-    _assert(packer.flush(true) == OK, "Failed to write to preload.pck")
-    
-    print("LuckyAPI MODLOADER > Loading patched code...")
-    
-    _assert(ProjectSettings.load_resource_pack("user://_luckyapi_patched/preload.pck", true), "Failed to load patched code!")
-    force_reload("res://Main.tscn")
-    force_reload("res://Slot Icon.tscn")
-    force_reload("res://Tooltip.tscn")
-    force_reload("res://Card.tscn")
-    force_reload("res://Pop-up.tscn")
-    force_reload("res://Reel.tscn")
-
-    print("LuckyAPI MODLOADER > Patching game code complete!")
-
-
-func after_start():
-    load_mods()
-    add_all_tags_in_descriptions()
-    datadump()
-    post_initialize()
-
-    print("LuckyAPI MODLOADER > Initialization complete!")
-
-func post_initialize():
-    for mod_id in mod_load_order:
-        var mod := mods[mod_id]
-        if mod.has_method("on_post_initialize"):
-            mod.on_post_initialize(self, tree)
+    patch_preload()
 
 func find_mods():
     print("LuckyAPI MODLOADER > Finding mods...")
@@ -332,6 +274,86 @@ func find_mods():
         add_mod_to_load_order(mod_id, mod_load_order)
         for dependency in mod_info[mod_id].dependencies:
             _assert(mods.has(dependency), "Mod " + mod_id + " requires a dependency which wasn't found: " + dependency + "!")
+            
+func add_mod_to_load_order(mod_id: String, load_order: Array, tree := []):
+    _assert(tree.find(mod_id) == -1, "Circular 'load_after' for mods!")
+    if load_order.find(mod_id) != -1:
+        return
+
+    var new_tree := tree.duplicate()
+    new_tree.push_back(mod_id)
+
+    for load_after in mod_info[mod_id].load_after:
+        add_mod_to_load_order(load_after, load_order, new_tree)
+    
+    load_order.push_back(mod_id)
+
+func patch_preload():
+    print("LuckyAPI MODLOADER > Beginning patching process...")
+
+    var packer := PCKPacker.new()
+    _assert(packer.pck_start("user://_luckyapi_patched/preload.pck") == OK, "Opening preload.pck for writing failed!")
+    var force_reload := []
+    patch_tscn("res://Main.tscn", ["res://modloader/patches/Main.gd", "res://modloader/patches/Title.gd", "res://modloader/patches/Reels.gd"], ["Main", "Title", "Reels"], packer, force_reload)
+    patch_tscn("res://Slot Icon.tscn", ["res://modloader/patches/SlotIcon.gd"], ["Slot Icon"], packer, force_reload)
+    patch_tscn("res://Tooltip.tscn", ["res://modloader/patches/Tooltip_Card.gd"], ["Card"], packer, force_reload)
+    patch_tscn("res://Card.tscn", ["res://modloader/patches/Card.gd"], ["Card"], packer, force_reload)
+    patch_tscn("res://Pop-up.tscn", ["res://modloader/patches/Pop-up.gd"], ["Pop-up"], packer, force_reload)
+    patch_tscn("res://Reel.tscn", ["res://modloader/patches/Reel.gd"], ["Reel"], packer, force_reload)
+
+    _assert(packer.flush(true) == OK, "Failed to write to preload.pck")
+    print("LuckyAPI MODLOADER > Loading patched code...")
+    
+    _assert(ProjectSettings.load_resource_pack("user://_luckyapi_patched/preload.pck", true), "Failed to load patched code!")
+    for to_reload in force_reload:
+        force_reload(to_reload)
+
+    apply_mod_patches()
+
+    print("LuckyAPI MODLOADER > Patching game code complete!")
+
+func apply_mod_patches():
+    for mod_name in mod_load_order:
+        var info := mod_info[mod_name]
+        var patches := info.patches
+
+        if patches.size() == 0:
+            continue
+        
+        print("LuckyAPI MODLOADER > Beginning patching process for mod " + mod_name + "...")
+
+        var packer_name := "user://_luckyapi_patched/mod_patches_" + mod_name + ".pck"
+        var packer := PCKPacker.new()
+        _assert(packer.pck_start(packer_name) == OK, "Opening mod_patches_" + mod_name + ".pck for writing failed!")
+        var force_reload := []
+
+        for patch_info in patches:
+            if patch_info.type == "tscn":
+                var scripts := []
+                var names := []
+
+                for name in patch_info.scripts.keys():
+                    scripts.push_back(patch_info.scripts[name])
+                    names.push_back(name)
+                
+                patch_tscn(patch_info.to_patch, scripts, names, packer, force_reload, true)
+            elif patch_info.type == "gd":
+                patch_gd(patch_info.to_patch, patch_info.scripts.main, packer, force_reload)
+        
+        _assert(packer.flush(true) == OK, "Failed to write to mod_patches_" + mod_name + ".pck")
+        print("LuckyAPI MODLOADER > Loading patched code for " + mod_name + "...")
+
+        _assert(ProjectSettings.load_resource_pack(packer_name, true), "Failed to load patched code!")
+        for to_reload in force_reload:
+            force_reload(to_reload)
+
+func after_start():
+    load_mods()
+    add_all_tags_in_descriptions()
+    datadump()
+    post_initialize()
+
+    print("LuckyAPI MODLOADER > Initialization complete!")
 
 func load_mods():
     print("LuckyAPI MODLOADER > Running load method on found mods...")
@@ -358,6 +380,23 @@ func load_mods():
     current_mod_name = ""
     print("LuckyAPI MODLOADER > Loading mods complete!")
 
+func add_all_tags_in_descriptions():
+    for symbol_id in databases.tile_database.keys():
+        var description := translate(symbol_id + "_desc")
+        if description == symbol_id + "_desc":
+            continue
+        
+        var regex_group := RegEx.new()
+        regex_group.compile("<group_([a-zA-Z0-9_]+)> (and|or) <last_\\1>")
+        var result_group := regex_group.search(description)
+        while result_group != null:
+            var id := result_group.get_string(1)
+            var join := result_group.get_string(2)
+            description = splice(description, result_group.get_start(), result_group.get_end(), "<all_" + join + "_" + id + ">")
+            result_group = regex_group.search(description)
+        
+        add_translation(symbol_id + "_desc", description, TranslationServer.get_locale())
+
 func datadump():
     print("LuckyAPI MODLOADER > Creating Data Dump...")
 
@@ -367,15 +406,8 @@ func datadump():
 
     print("LuckyAPI MODLOADER > Data Dump creation complete!")
 
-func add_mod_to_load_order(mod_id: String, load_order: Array, tree := []):
-    _assert(tree.find(mod_id) == -1, "Circular 'load_after' for mods!")
-    if load_order.find(mod_id) != -1:
-        return
-
-    var new_tree := tree.duplicate()
-    new_tree.push_back(mod_id)
-
-    for load_after in mod_info[mod_id].load_after:
-        add_mod_to_load_order(load_after, load_order, new_tree)
-    
-    load_order.push_back(mod_id)
+func post_initialize():
+    for mod_id in mod_load_order:
+        var mod := mods[mod_id]
+        if mod.has_method("on_post_initialize"):
+            mod.on_post_initialize(self, tree)
