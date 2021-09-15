@@ -178,3 +178,8 @@ func modify_rent_values():
             var mod := modloader.mods[mod_id]
             if mod.has_method("modify_removal_tokens"):
                 comrade_values[1] = mod.modify_removal_tokens(comrade_values[1], times_rent_paid + 1)
+
+        for mod_id in modloader.mod_load_order:
+            var mod := modloader.mods[mod_id]
+            if mod.has_method("modify_essence_tokens"):
+                comrade_values[2] = mod.modify_essence_tokens(comrade_values[2], times_rent_paid + 1)
