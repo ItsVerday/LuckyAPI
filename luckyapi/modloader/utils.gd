@@ -553,6 +553,9 @@ func load_info(path: String, expected_id: String):
     if json.has("load-after"):
         mod_info.load_after = json["load-after"]
     
+    if json.has("main"):
+        mod_info.main_script = json.main
+    
     return mod_info
 
 class ModInfo:
@@ -561,6 +564,7 @@ class ModInfo:
     var authors := []
     var name := ""
     var description := ""
+    var main_script := "mod.gd"
     var dependencies := []
     var load_after := []
 

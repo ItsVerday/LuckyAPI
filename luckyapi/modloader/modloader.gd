@@ -256,6 +256,7 @@ func before_start():
     _assert(expected_versions.find(game_version) > -1, "Version mismatch: This modloader is for version '" + str(expected_versions) + "' but the game is running version '" + game_version + "'!")
 
     patch_preload()
+    find_mods()
 
 func patch_preload():
     print("LuckyAPI MODLOADER > Beginning patching process...")
@@ -298,8 +299,8 @@ func post_initialize():
         if mod.has_method("on_post_initialize"):
             mod.on_post_initialize(self, tree)
 
-func load_mods():
-    print("LuckyAPI MODLOADER > Loading mods...")
+func find_mods():
+    print("LuckyAPI MODLOADER > Finding mods...")
     var mods_dir := "user://mods/"
     var _dir := Directory.new()
     if _dir.open(mods_dir) == OK:
@@ -319,35 +320,41 @@ func load_mods():
                 continue
             
             print("LuckyAPI MODLOADER > Mod found: " + mod_name)
-            var mod_script := load("res://" + mod_name + "/mod.gd")
-            var mod := mod_script.new()
             var info := load_info("res://" + mod_name + "/mod.json", mod_name)
-
-            mods[mod_name] = mod
             mod_info[mod_name] = info
-            mod_content[mod_name] = {
-                "symbols": [],
-                "symbol_patches": []
-            }
+
+            print("LuckyAPI MODLOADER > Read mod info for mod: " + mod_name)
 
             mod_count += 1
-            print("LuckyAPI MODLOADER > Mod loaded: " + mod_name)
-
             found_name = _dir.get_next()
     
     for mod_id in mod_info.keys():
         add_mod_to_load_order(mod_id, mod_load_order)
         for dependency in mod_info[mod_id].dependencies:
             _assert(mods.has(dependency), "Mod " + mod_id + " requires a dependency which wasn't found: " + dependency + "!")
-    
-    print("LuckyAPI MODLOADER > Running load method on mods...")
+
+func load_mods():
+    print("LuckyAPI MODLOADER > Running load method on found mods...")
+
     for mod_name in mod_load_order:
-        var mod := mods[mod_name]
         var info := mod_info[mod_name]
+
+        var mod_script := load("res://" + mod_name + "/" + info.main_script)
+        var mod := mod_script.new()
+        mods[mod_name] = mod
+        mod_content[mod_name] = {
+            "symbols": [],
+            "symbol_patches": []
+        }
+
+        print("LuckyAPI MODLOADER > Attempting to load " + info.name + " " + info.version + "...")
+
         if mod.has_method("load"):
             current_mod_name = mod_name
             mod.load(self, info, tree)
+        
         print("LuckyAPI MODLOADER > " + info.name + " " + info.version + " by " + get_names_list(info.authors) + " loaded!")
+    
     current_mod_name = ""
     print("LuckyAPI MODLOADER > Loading mods complete!")
 
