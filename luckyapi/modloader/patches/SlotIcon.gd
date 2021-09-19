@@ -18,6 +18,13 @@ func _ready():
     ._ready()
     update_mod_symbol(self.type)
 
+func _input(event):
+    if hovering and event is InputEventMouseButton and event.is_pressed() and event.button_index == BUTTON_LEFT and not modloader.globals.main.lmb_down:
+        if modloader.globals.pop_up.emails.size() == 0:
+            if mod_symbol and mod_symbol.has_method("on_click"):
+                mod_symbol.on_click(self, mod_symbol)
+    ._input(event)
+
 func change_type(p_type: String, need_cond_effects: bool):
     update_mod_symbol(p_type)
     .change_type(p_type, need_cond_effects)
@@ -46,7 +53,7 @@ func start_animation(anim):
             set_texture(texture)
 
 func play_sfx(symbol, sfx_type):
-    if $"/root/Main/Options Sprite/Options".animation_speed == 0 and reels.sfx_timer > 0:
+    if modloader.globals.options.animation_speed == 0 and reels.sfx_timer > 0:
         delayed_sfx.push_back([symbol, sfx_type])
         return
     var player = symbol.sfx_player
@@ -112,8 +119,8 @@ func play_sfx(symbol, sfx_type):
         else:
             player.stream.loop_begin = 0
             player.stream.loop_end = 0
-        player.volume_db = $"/root/Main/Options Sprite/Options".sfx.goal_volume
-        if player.volume_db > -80 and not ($"/root/Main/Options Sprite/Options".mute_while_in_background and not $"/root/Main".window_focus):
+        player.volume_db = modloader.globals.options.sfx.goal_volume
+        if player.volume_db > -80 and not (modloader.globals.options.mute_while_in_background and not modloader.globals.main.window_focus):
             player.play()
             reels.sfx_timer = 1
 
@@ -204,14 +211,16 @@ func add_conditional_effects():
         mod_symbol.add_conditional_effects(self, adj_icons)
         add_effect({"comparisons": [{"a": "destroyed", "b": true, "not_prev": true}], "value_to_change": "type", "diff": "empty", "push_front": true})
         add_effect({"comparisons": [{"a": "removed", "b": true, "not_prev": true}], "value_to_change": "type", "diff": "empty", "push_front": true})
-    else:
-        .add_conditional_effects()
-    
+        
     var patches := modloader.symbol_patches[self.type]
+    var override := false
     if patches != null:
         for patch in patches:
             if patch.has_method("add_conditional_effects"):
+                override = true
                 patch.add_conditional_effects(self, adj_icons)
+    if !override:
+        .add_conditional_effects()
     
     has_effects = true
 
@@ -222,8 +231,8 @@ func add_effect(effect):
         .add_effect(effect)
 
 func add_effect_to_symbol(y, x, effect):
+    self.texture_type = self.type
     if effect.effect_dictionary != null:
-        self.texture_type = self.type
         .add_effect_to_symbol(y, x, effect.effect_dictionary)
     else:
         .add_effect_to_symbol(y, x, effect)

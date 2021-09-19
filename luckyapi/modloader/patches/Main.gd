@@ -22,6 +22,8 @@ func load_globals(modloader: Reference):
     modloader.globals.items = $"/root/Main/Items"
     modloader.globals.reels = $"/root/Main/Reels"
     modloader.globals.pop_up = $"/root/Main/Pop-up Sprite/Pop-up"
+    modloader.globals.options = $"/root/Main/Options Sprite/Options"
+    modloader.globals.stats = $"/root/Main/Stats Sprite/Stats"
 
 func reset_values():
     .reset_values()

@@ -129,8 +129,6 @@ func patch_symbol(symbol_patch, id):
     var groups := database_entry.groups
     for group in groups:
         databases.group_database.symbols[group].erase(id)
-        if databases.group_database.symbols[group].size() == 0:
-            databases.group_database.symbols[group] = null
     
     groups = symbol_patch.patch_groups(groups)
     for group in groups:
@@ -154,13 +152,15 @@ func patch_symbol(symbol_patch, id):
         for extra_texture_key in extra_textures.keys():
             databases.icon_texture_database[id + "_" + extra_texture_key] = extra_textures[extra_texture_key]
     
-    var sfx := databases.sfx_database.symbols[id]
+    var sfx : Array = nvl(databases.sfx_database.symbols[id], [])
     if mod_symbol != null:
         sfx = symbol_patch.patch_sfx(mod_symbol.sfx)
         mod_symbol.sfx = sfx
     else:
         sfx = symbol_patch.patch_sfx(sfx)
     databases.sfx_database.symbols[id] = sfx
+    if sfx:
+        database_entry.sfx = sfx
     
     var sfx_overrides : Dictionary
     if mod_symbol != null:
