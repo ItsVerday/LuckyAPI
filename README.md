@@ -1,4 +1,4 @@
-# LuckyAPI v0.2.0
+# LuckyAPI v0.3.0
 
 LuckyAPI is a modloader for the indie game [Luck be a Landlord](https://store.steampowered.com/app/1404850/Luck_be_a_Landlord/). It's a really interesting game, go buy it on Steam!
 LuckyAPI is heavily based on a [Luckloader](https://github.com/FeldrinH/Luckloader), which I found to be confusing, so I began writing my own modloader. The modloader is in an early state, so don't expect too much out of it just yet.
