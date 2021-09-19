@@ -273,7 +273,7 @@ func find_mods():
     for mod_id in mod_info.keys():
         add_mod_to_load_order(mod_id, mod_load_order)
         for dependency in mod_info[mod_id].dependencies:
-            _assert(mods.has(dependency), "Mod " + mod_id + " requires a dependency which wasn't found: " + dependency + "!")
+            _assert(mod_info.has(dependency), "Mod " + mod_id + " requires a dependency which wasn't found: " + dependency + "!")
             
 func add_mod_to_load_order(mod_id: String, load_order: Array, tree := []):
     _assert(tree.find(mod_id) == -1, "Circular 'load_after' for mods!")
