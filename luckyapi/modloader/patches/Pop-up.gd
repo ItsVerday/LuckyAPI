@@ -16,16 +16,16 @@ func add_cards(f_rarities):
         var r_chances
         if email.type == "add_tile":
             if email.extra_values.has("forced_group"):
-                card_pool = $"/root/Main/".rarity_database["symbols"].duplicate(true)
+                card_pool = modloader.databases.rarity_database["symbols"].duplicate(true)
                 for c in card_pool.keys():
                     var c_tbe = []
                     for i in card_pool[c]:
-                        if $"/root/Main/".group_database["symbols"][email.extra_values.forced_group].find(i) == -1:
+                        if modloader.databases.group_database["symbols"][email.extra_values.forced_group].find(i) == -1:
                             c_tbe.push_back(i)
                     for z in c_tbe:
                         card_pool[c].erase(z)
             else:
-                card_pool = $"/root/Main/".rarity_database["symbols"].duplicate(true)
+                card_pool = modloader.databases.rarity_database["symbols"].duplicate(true)
                 if not reels.can_add_highlander():
                     card_pool["very_rare"].erase("highlander")
             for c in card_pool.keys():
@@ -33,22 +33,22 @@ func add_cards(f_rarities):
                     if not option_is_findable(i):
                         card_pool[c].erase(i)
             
-            r_chances = $"/root/Main/".rarity_chances["symbols"].duplicate(true)
-            database = $"/root/Main/".tile_database
+            r_chances = modloader.globals.main.rarity_chances["symbols"].duplicate(true)
+            database = modloader.databases.tile_database
             for r in r_chances.keys():
                 r_chances[r] *= rarity_bonuses["symbols"][r]
-            if not $"/root/Main/Stats Sprite/Stats".essences_unlocked:
+            if not modloader.globals.stats.essences_unlocked:
                 card_pool[database["essence_capsule"].rarity].erase("essence_capsule")
         elif email.type == "add_item":
             symbols_to_choose_from = 3
-            database = $"/root/Main/".item_database
-            card_pool = $"/root/Main/".rarity_database["items"].duplicate(true)
-            for i in $"/root/Main/Items".items:
+            database = modloader.databases.item_database
+            card_pool = modloader.databases.rarity_database["items"].duplicate(true)
+            for i in modloader.globals.items.items:
                 card_pool[i.rarity].erase(i.type)
-            for i in $"/root/Main/Items".destroyed_items:
+            for i in modloader.globals.items.destroyed_items:
                 if database[i].rarity != "essence":
                     card_pool[database[i].rarity].erase(i)
-            r_chances = $"/root/Main/".rarity_chances["items"].duplicate(true)
+            r_chances = modloader.globals.main.rarity_chances["items"].duplicate(true)
             for r in r_chances.keys():
                 r_chances[r] *= rarity_bonuses["items"][r]
             if email.extra_values.hash() != {"forced_rarity": ["essence", "essence", "essence"]}.hash():
@@ -62,7 +62,7 @@ func add_cards(f_rarities):
                     for i in range(comfy_pillow_essence_triggers):
                         email.extra_values.forced_rarity.push_back("very_rare")
                     comfy_pillow_essence_triggers = 0
-            if not $"/root/Main/Stats Sprite/Stats".essences_unlocked:
+            if not modloader.globals.stats.essences_unlocked:
                 card_pool[database["dishwasher"].rarity].erase("dishwasher")
                 card_pool[database["popsicle"].rarity].erase("popsicle")
         for c in range(symbols_to_choose_from):
@@ -136,7 +136,7 @@ func add_cards(f_rarities):
             else:
                 card.data = database[saved_card_types[c]]
                 cards.push_back(card)
-        $"/root/Main".save_game()
+        modloader.globals.main.save_game()
         var total_card_width = 0
         var tallest_height = 0
         for c in cards:

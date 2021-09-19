@@ -38,6 +38,38 @@ func join(a: String, b: String, delimeter := " ") -> String:
     
     return a + delimeter + b
 
+func nvl(a, b = 0, keep_falsy := true):
+    if keep_falsy:
+        if a in ["", 0, false, [], {}]:
+            return a
+    return a if a else b
+
+static func subtract(a: Array, b: Array) -> Array:
+    var result := []
+    var bag := {}
+    for item in b:
+        if not bag.has(item):
+            bag[item] = 0
+        bag[item] += 1
+    for item in a:
+        if bag.has(item):
+            bag[item] -= 1
+            if bag[item] == 0:
+                bag.erase(item)
+        else:
+            result.append(item)
+    return result
+
+
+static func merge(a: Array, b: Array) -> Array:
+    var result := a
+    if result.size() == 0:
+        return b
+    for item in b:
+        if not item in a:
+            result.push_back(item)
+    return result
+
 func splice(string, start, end, replace):
     return string.substr(0, start) + replace + string.substr(end)
 
@@ -46,13 +78,17 @@ func fix_translation(string):
 
 func fix_all_tags(string):
     var regex_all := RegEx.new()
-    regex_all.compile("<all_(and|or)_([a-zA-Z0-9_]+)>")
+    regex_all.compile("<all_(and|or|na)_([a-zA-Z0-9_]+)>")
     var result_all := regex_all.search(string)
     while result_all != null:
-        var join := result_all.get_string(1)
+        var join : String
+        if result_all.get_string(1) == "na":
+            join = ""
+        else:
+          join = result_all.get_string(1) + " "
         var id := result_all.get_string(2)
         var group_members := get_group_members(id)
-        var replace := "<group_" + id + "> " + join + " <last_" + id + ">"
+        var replace := "<group_" + id + "> " + join + "<last_" + id + ">"
         if group_members.size() == 0:
             replace = "none"
         if group_members.size() == 1:
@@ -117,14 +153,14 @@ func can_find_symbol(type):
 func get_symbol_groups(symbol_id: String):
     var groups := []
     for group_id in modloader.databases.group_database.symbols:
-        if modloader.databases.group_database.symbols[group_id].find(symbol_id) > -1:
+        if symbol_id in modloader.databases.group_database.symbols[group_id]:
             groups.push_back(group_id)
     
     return groups
 
 func get_symbol_rarity(symbol_id: String):
     for rarity in modloader.databases.rarity_database.symbols:
-        if modloader.databases.rarity_database.symbols[rarity].find(symbol_id) > -1:
+        if symbol_id in modloader.databases.rarity_database.symbols[rarity]:
             return rarity
     
     return null
@@ -815,6 +851,10 @@ class SymbolEffect:
         effect_dictionary.unconditional = true
         return self
     
+    func priority():
+        effect_dictionary.push_front = true
+        return self
+    
     func add_symbol_type(type: String):
         effect_dictionary.tiles_to_add.push_back({"type": type})
         return self
@@ -824,6 +864,16 @@ class SymbolEffect:
             effect_dictionary.tiles_to_add.push_back({"group": group, "min_rarity": min_rarity})
         else:
             effect_dictionary.tiles_to_add.push_back({"group": group})
+        return self
+    
+    func add_symbols_of_type(arr: Array):
+        for symbol in arr:
+            add_symbol_type(symbol)
+        return self
+    
+    func add_symbols_of_group(arr: Array, min_rarity := ""):
+        for group in arr:
+            add_symbol_group(group, min_rarity)
         return self
     
     func add_item_type(type: String):
@@ -928,6 +978,9 @@ class SymbolEffect:
     
     func add_permanent_bonus(diff: int):
         return self.add_to_value("permanent_bonus", diff)
+    
+    func multiply_permanent_multiplier(diff: int):
+        return self.multiply_value("permanent_multiplier", diff)
     
     func animate(animation: String, sfx_type := 0, targets := []):
         effect_dictionary.anim = animation
