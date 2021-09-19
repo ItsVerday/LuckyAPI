@@ -15,14 +15,17 @@ var mod_info := {}
 var mod_load_order := []
 var mod_content := {}
 var mod_count := 0
+var current_mod_name := ""
+
 var databases := {}
 var globals := {}
+
 var mod_symbols := {}
 var symbol_patches := {}
 var translations := {}
-var current_mod_name := ""
-
 var starting_symbols := []
+var dynamic_groups := {}
+var update_dynamic_groups := false
 
 func _init(tree: SceneTree):
     self.tree = tree
@@ -61,6 +64,9 @@ func add_mod_symbol(path: String, params := {}):
             databases.group_database.symbols[group] = []
         
         databases.group_database.symbols[group].push_back(id)
+
+        if dynamic_groups.has(group):
+            dynamic_groups[group].symbol_overrides[id] = true
     
     if mod_symbol.name is String:
         add_translation(id, mod_symbol.name)
@@ -77,6 +83,8 @@ func add_mod_symbol(path: String, params := {}):
     if symbol_patches.has(id):
         for symbol_patch in symbol_patches[id]:
             patch_symbol(symbol_patch, id)
+    
+        update_symbol_dynamic_groups(id)
     
     print("LuckyAPI MODLOADER > Mod Symbol added: " + id)
     return mod_symbol
@@ -127,15 +135,21 @@ func patch_symbol(symbol_patch, id):
         mod_symbol.rarity = rarity
     
     var groups := database_entry.groups
+    var patched_groups := symbol_patch.patch_groups(groups.duplicate())
+
     for group in groups:
         databases.group_database.symbols[group].erase(id)
+        if not patched_groups.has(group) and dynamic_groups.has(group):
+            dynamic_groups[group].symbol_overrides[id] = false
     
-    groups = symbol_patch.patch_groups(groups)
-    for group in groups:
+    for group in patched_groups:
         if not databases.group_database.symbols.has(group):
             databases.group_database.symbols[group] = []
         
+        database_entry.groups = patched_groups
         databases.group_database.symbols[group].push_back(id)
+        if not groups.has(group) and dynamic_groups.has(group):
+            dynamic_groups[group].symbol_overrides[id] = true
     
     database_entry.groups = groups
     if mod_symbol != null:
@@ -152,7 +166,7 @@ func patch_symbol(symbol_patch, id):
         for extra_texture_key in extra_textures.keys():
             databases.icon_texture_database[id + "_" + extra_texture_key] = extra_textures[extra_texture_key]
     
-    var sfx : Array = nvl(databases.sfx_database.symbols[id], [])
+    var sfx: Array = nvl(databases.sfx_database.symbols[id], [])
     if mod_symbol != null:
         sfx = symbol_patch.patch_sfx(mod_symbol.sfx)
         mod_symbol.sfx = sfx
@@ -199,6 +213,62 @@ func patch_symbol(symbol_patch, id):
             description = ""
         description = symbol_patch.patch_description(description)
         add_translation(id + "_desc", description, TranslationServer.get_locale())
+    
+    update_symbol_dynamic_groups(id)
+
+func add_dynamic_group(name, dynamic_group):
+    dynamic_groups[name] = dynamic_group
+    dynamic_group.name = name
+    dynamic_group.modloader = self
+
+    if databases.group_database.symbols.has(name):
+        for symbol in databases.group_database.symbols[name]:
+            dynamic_group.symbol_overrides[symbol] = true
+    
+    update_dynamic_group(name)
+
+func update_dynamic_group(dynamic_group_name, depth := 0):
+    var should_redo := false
+
+    for symbol in databases.tile_database.keys():
+        var did_update := update_symbol_in_dynamic_group(symbol, dynamic_group_name, depth)
+
+        if did_update:
+            update_symbol_dynamic_groups(symbol, depth + 1)
+
+func update_symbol_dynamic_groups(symbol, depth := 0):
+    var should_redo := false
+
+    for dynamic_group_name in dynamic_groups.keys():
+        var did_update := update_symbol_in_dynamic_group(symbol, dynamic_group_name, depth)
+
+        if did_update:
+            should_redo = true
+    
+    if should_redo and depth < 10:
+        update_symbol_dynamic_groups(symbol, depth + 1)
+
+func update_symbol_in_dynamic_group(symbol, dynamic_group_name):
+    var dynamic_group := dynamic_groups[dynamic_group_name]
+    var old_cache_entry := dynamic_group.cache[symbol]
+    var is_included := dynamic_group.check_symbol(symbol)
+
+    if old_cache_entry != is_included:
+        if not databases.group_database.symbols.has(dynamic_group_name):
+            databases.group_database.symbols[dynamic_group_name] = []
+        
+        if is_included:
+            databases.tile_database[symbol].groups.push_back(dynamic_group_name)
+            databases.group_database.symbols[dynamic_group_name].push_back(symbol)
+        else:
+            databases.tile_database[symbol].groups.erase(dynamic_group_name)
+            databases.group_database.symbols[dynamic_group_name].erase(symbol)
+        
+        return true
+    
+    return false
+
+
 
 func check_missing_symbol(id):
     if id == null:
@@ -206,7 +276,6 @@ func check_missing_symbol(id):
     
     if not databases.tile_database.has(id):
         add_mod_symbol("res://modloader/MissingSymbol.gd", {"id": id})
-
 
 func generate_starting_symbols():
     var symbols := ["coin", "cherry", "pearl", "flower", "cat"]
@@ -348,12 +417,88 @@ func apply_mod_patches():
             force_reload(to_reload)
 
 func after_start():
+    add_default_dynamic_groups()
     load_mods()
     add_all_tags_in_descriptions()
     datadump()
     post_initialize()
 
     print("LuckyAPI MODLOADER > Initialization complete!")
+
+func add_default_dynamic_groups():
+    var piratelikes := create_dynamic_group("piratelikes")
+    piratelikes.add_symbols({
+        "group": "chest"
+    })
+    
+    var food := create_dynamic_group("food")
+    food.add_symbols({
+        "group": ["fruit", "booze"]
+    })
+    food.symbol_overrides["coconut"] = false
+
+    var witchlikes := create_dynamic_group("witchlikes")
+    witchlikes.add_symbols({
+        "group": "hex"
+    })
+
+    var farmerlikes := create_dynamic_group("farmerlikes")
+    farmerlikes.add_symbols({
+        "group": ["fruit", "plant", "chickenstuff"]
+    })
+    farmerlikes.symbol_overrides["coconut_half"] = false
+
+    var organism := create_dynamic_group("organism")
+    organism.add_symbols({
+        "group": ["human", "animal"]
+    })
+    organism.symbol_overrides["billionaire"] = false
+
+    var doglikes := create_dynamic_group("doglikes")
+    doglikes.add_symbols({
+        "group": ["human"]
+    })
+    doglikes.symbol_overrides["billionaire"] = false
+    
+    var fruitlikes := create_dynamic_group("fruitlikes")
+    fruitlikes.add_symbols({
+        "group": "fruit",
+        "rarity": ["common", "uncommon"]
+    })
+
+    var darkhumor := create_dynamic_group("darkhumor")
+    darkhumor.add_symbols({
+        "group": "spiritbox"
+    })
+
+    var anvillikes := create_dynamic_group("anvillikes")
+    anvillikes.add_symbols({
+        "group": ["dwarflikes", "minerlikes"]
+    })
+
+    var archlikes := create_dynamic_group("archlikes")
+    archlikes.add_symbols({
+        "group": ["gem", "minerlikes"],
+        "rarity": ["common", "uncommon"]
+    })
+
+    var box := create_dynamic_group("box")
+    box.add_symbols({
+        "group": ["chest", "spiritbox"]
+    })
+
+    var robinlikes := create_dynamic_group("robinlikes")
+    robinlikes.add_symbols({
+        "group": ["arrow"]
+    })
+    robinlikes.add_symbols({
+        "type": "thief"
+    })
+
+    var fossillikes := create_dynamic_group("fossillikes")
+    fossillikes.add_symbols({
+        "group": "hex"
+    })
 
 func load_mods():
     print("LuckyAPI MODLOADER > Running load method on found mods...")

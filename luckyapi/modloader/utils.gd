@@ -2,6 +2,54 @@ extends Reference
 
 var modloader: Reference
 
+func nvl(a, b = 0, keep_falsy := true):
+    if keep_falsy:
+        if a in ["", 0, false, [], {}]:
+            return a
+    return a if a else b
+
+func random(lower: float, upper: float):
+    randomize()
+    return rand_range(lower, upper)
+
+func match_value(value: String, match_against):
+    if match_against is String:
+        if match_against == "*":
+            return true
+        
+        return value == match_against
+    elif match_against is Array:
+        for element in match_against:
+            if match_value(value, element):
+                return true
+        
+        return false
+    
+    return false
+    
+func check_extends(script, base):
+    var check_script := script
+    while check_script != null:
+        if check_script.resource_path == base:
+            return true
+        
+        check_script = check_script.get_base_script()
+    
+    return false
+
+func _assert(condition: bool, message: String):
+    if !condition:
+        _halt(message)
+
+func _halt(message: String):
+    push_error("LuckyAPI MODLOADER > Runtime Error: " + message)
+
+    OS.alert("LuckyAPI Modloader has encountered an error!\n" + message + "\nJoin our discord at https://discord.gg/7ZncdvbXp7 for assistance.")
+    var n = null
+    n.fail_runtime_check()
+
+
+
 func add_translation(key: String, value: String, locale := "en"):
     var translation := modloader.translations[locale]
     if translation == null:
@@ -38,38 +86,6 @@ func join(a: String, b: String, delimeter := " ") -> String:
     
     return a + delimeter + b
 
-func nvl(a, b = 0, keep_falsy := true):
-    if keep_falsy:
-        if a in ["", 0, false, [], {}]:
-            return a
-    return a if a else b
-
-static func subtract(a: Array, b: Array) -> Array:
-    var result := []
-    var bag := {}
-    for item in b:
-        if not bag.has(item):
-            bag[item] = 0
-        bag[item] += 1
-    for item in a:
-        if bag.has(item):
-            bag[item] -= 1
-            if bag[item] == 0:
-                bag.erase(item)
-        else:
-            result.append(item)
-    return result
-
-
-static func merge(a: Array, b: Array) -> Array:
-    var result := a
-    if result.size() == 0:
-        return b
-    for item in b:
-        if not item in a:
-            result.push_back(item)
-    return result
-
 func splice(string, start, end, replace):
     return string.substr(0, start) + replace + string.substr(end)
 
@@ -85,7 +101,7 @@ func fix_all_tags(string):
         if result_all.get_string(1) == "na":
             join = ""
         else:
-          join = result_all.get_string(1) + " "
+            join = result_all.get_string(1) + " "
         var id := result_all.get_string(2)
         var group_members := get_group_members(id)
         var replace := "<group_" + id + "> " + join + "<last_" + id + ">"
@@ -98,23 +114,7 @@ func fix_all_tags(string):
         result_all = regex_all.search(string)
     
     return string
-
-func get_group_members(id):
-    if modloader.databases.group_database.symbols.has(id):
-        return modloader.databases.group_database.symbols[id]
     
-    if modloader.databases.group_database.items.has(id):
-        return modloader.databases.group_database.items[id]
-    
-    return []
-
-func random(lower: float, upper: float):
-    randomize()
-    return rand_range(lower, upper)
-
-func array_pick(arr: Array):
-    return arr[floor(random(0, arr.size()))]
-
 func get_names_list(arr: Array):
     if arr.size() == 0:
         return "N/A"
@@ -134,6 +134,47 @@ func get_names_list(arr: Array):
         index -= 1
     
     return string
+
+
+
+func subtract(a: Array, b: Array) -> Array:
+    var result := []
+    var bag := {}
+    for item in b:
+        if not bag.has(item):
+            bag[item] = 0
+        bag[item] += 1
+    for item in a:
+        if bag.has(item):
+            bag[item] -= 1
+            if bag[item] == 0:
+                bag.erase(item)
+        else:
+            result.append(item)
+    return result
+
+func merge(a: Array, b: Array) -> Array:
+    var result := a
+    if result.size() == 0:
+        return b
+    for item in b:
+        if not item in a:
+            result.push_back(item)
+    return result
+
+func array_pick(arr: Array):
+    return arr[floor(random(0, arr.size()))]
+
+
+
+func get_group_members(id):
+    if modloader.databases.group_database.symbols.has(id):
+        return modloader.databases.group_database.symbols[id]
+    
+    if modloader.databases.group_database.items.has(id):
+        return modloader.databases.group_database.items[id]
+    
+    return []
 
 func can_find_symbol(type):
     var displayed_icons := modloader.globals.reels.displayed_icons
@@ -165,7 +206,7 @@ func get_symbol_rarity(symbol_id: String):
     
     return null
 
-func symbol_condition(symbol_id: String, condition):
+func check_symbol_condition(symbol_id: String, condition):
     var negate := false
     if condition.has("negate"):
         negate = condition.negate
@@ -230,22 +271,25 @@ func symbol_condition(symbol_id: String, condition):
         if match_value(get_symbol_rarity(symbol_id), condition.not_rarity):
             return negate
     
-    return not negate
-
-func match_value(value: String, match_against):
-    if match_against is String:
-        if match_against == "*":
-            return true
-        
-        return value == match_against
-    elif match_against is Array:
-        for element in match_against:
-            if match_value(value, element):
-                return true
-        
-        return false
+    if condition.has("value"):
+        if not match_value(modloader.databases.tile_database[symbol_id].value, condition.value):
+            return negate
     
-    return false
+    if condition.has("not_value"):
+        if match_value(modloader.databases.tile_database[symbol_id].value, condition.not_value):
+            return negate
+    
+    if condition.has("min_value"):
+        var value := modloader.databases.tile_database[symbol_id].value
+        if value < condition.min_value:
+            return negate
+    
+    if condition.has("max_value"):
+        var value := modloader.databases.tile_database[symbol_id].value
+        if value > condition.max_value:
+            return negate
+    
+    return not negate
 
 func get_symbol_list(group := "*", rarity := "*", ignore_can_find := false):
     var symbols := []
@@ -337,7 +381,6 @@ func pick_symbol(group := "*", rarity := "*", ignore_rarity := false, ignore_can
     
     return array_pick(possible_symbols)
 
-
 func list_symbols(source, filters := {}):
     var symbols := source
 
@@ -356,7 +399,7 @@ func list_symbols(source, filters := {}):
 
     var new_symbols := []
     for symbol in symbols:
-        if symbol_condition(symbol.type, filters):
+        if check_symbol_condition(symbol.type, filters):
             new_symbols.push_back(symbol)
 
     return new_symbols
@@ -370,43 +413,17 @@ func get_mod_symbols(mod_id: String):
 func get_mod_symbol_patches(mod_id: String):
     return modloader.mod_content[mod_id].symbol_patches
 
+func add_symbol(type):
+    modloader.globals.reels.symbol_queue.push_back(type)
+
+func add_item(type):
+    modloader.globals.items.add_item(type)
+
 func mod_installed(mod_id: String):
     return modloader.mods.has(mod_id)
 
 
-func check_extends(script, base):
-    var check_script := script
-    while check_script != null:
-        if check_script.resource_path == base:
-            return true
-        
-        check_script = check_script.get_base_script()
-    
-    return false
 
-
-func extract_script(scene: PackedScene, node_name: String) -> GDScript:
-    var state: SceneState = scene.get_state()
-    
-    var node_idx := -1
-    var node_count := state.get_node_count()
-    for i in node_count:
-        if state.get_node_name(i) == node_name:
-            node_idx = i
-            break
-    _assert(node_idx != -1, "Node not found while extracting script from packed scene!")
-    
-    var extracted_script: GDScript = null
-    var property_count := state.get_node_property_count(node_idx)
-    for i in property_count:
-        if state.get_node_property_name(node_idx, i) == "script":
-            extracted_script = state.get_node_property_value(node_idx, i)
-            break
-    _assert(extracted_script is GDScript, "Extracted script is not GDScript!")
-    _assert(extracted_script.has_source_code(), "Extracted script does not have source code!")
-    
-    return extracted_script
-    
 func load_texture(path: String) -> Texture:
     var image := Image.new()
     var err := image.load(path)
@@ -429,63 +446,6 @@ func load_wav(path):
     stream.stereo = true
     
     return stream
-
-func add_symbol(type):
-    modloader.globals.reels.symbol_queue.push_back(type)
-
-func add_item(type):
-    modloader.globals.items.add_item(type)
-
-var target_index := 0
-func patch_gd(target_path: String, new_script_path: String, packer: PCKPacker, force_reload: Array):
-    var script := ResourceLoader.load(target_path, "", true)
-    _assert(script is GDScript, "Script to be patched isn't a GDScript!")
-    var old_script := script.duplicate()
-
-    var extend := save_and_pack_resource(packer, old_script, target_path.trim_suffix(".gd") + str(target_index) + ".gd")
-    target_index += 1
-
-    script.source_code = read_text(new_script_path)
-    script.source_code = "extends \"" + extend + "\"\n" + script.source_code
-    save_and_pack_resource(packer, script, target_path)
-    target_index += 1
-
-    force_reload.push_back(target_path)
-    force_reload.push_back(extend)
-
-func patch_tscn(target_path: String, new_script_path: Array, node_name: Array, packer: PCKPacker, force_reload: Array, set_extends := false):
-    var scene := load(target_path)
-    for i in range(new_script_path.size()):
-        replace_script_and_pack_original(packer, scene, node_name[i], new_script_path[i], set_extends)
-    
-    save_and_pack_resource(packer, scene, target_path)
-
-    force_reload.push_back(target_path)
-
-func replace_script_and_pack_original(packer: PCKPacker, scene: PackedScene, node_name: String, new_script_path: String, set_extends: bool):
-    var script := extract_script(scene, node_name)
-    var old_script := script.duplicate()
-    script.source_code = read_text(new_script_path)
-    var target_path := scene.resource_path.get_basename() + "_" + node_name + ".gd"
-    if set_extends:
-        target_path = scene.resource_path.get_basename() + "_" + node_name + str(target_index) + ".gd"
-        target_index += 1
-
-    var extend := save_and_pack_resource(packer, old_script, target_path)
-    if set_extends:
-        script.source_code = "extends \"" + extend + "\"\n" + script.source_code
-
-func save_and_pack_resource(packer: PCKPacker, res: Resource, target_path: String):
-    var save_path := "user://_luckyapi_patched/" + target_path.trim_prefix("res://").replace("/", "_").replace("\\", "_")
-    
-    _assert(ResourceSaver.save(save_path, res) == OK, "Failed to save resource to " + save_path + "!")
-    _assert(packer.add_file(target_path, save_path) == OK, "Failed to pack resource to " + target_path + "!")
-
-    return target_path
-
-func force_reload(resource_path: String):
-    var new := ResourceLoader.load(resource_path, "", true)
-    new.take_over_path(resource_path)
 
 func load_pck(path: String, name := "content"):
     _assert(ProjectSettings.load_resource_pack(path, true), "Failed to load " + name + "!")
@@ -518,7 +478,6 @@ func load_folder(path: String, folder: String, name := "content"):
     recursive_pack(packer, path, "res://".plus_file(folder))
     _assert(packer.flush(true) == OK, "Failed to write to " + name + "!")
     _assert(ProjectSettings.load_resource_pack(pck_file, true), "Failed to load " + name + "!")
-
 
 func recursive_pack(packer: PCKPacker, path: String, packer_path: String):
     var dir := Directory.new()
@@ -580,16 +539,82 @@ func write_json(file_path: String, data, indent := "\t"):
     var json_text := JSON.print(data, indent)
     write_text(file_path, json_text)
 
-func _assert(condition: bool, message: String):
-    if !condition:
-        _halt(message)
 
-func _halt(message: String):
-    push_error("LuckyAPI MODLOADER > Runtime Error: " + message)
 
-    OS.alert("LuckyAPI Modloader has encountered an error!\n" + message + "\nJoin our discord at https://discord.gg/7ZncdvbXp7 for assistance.")
-    var n = null
-    n.fail_runtime_check()
+func extract_script(scene: PackedScene, node_name: String) -> GDScript:
+    var state: SceneState = scene.get_state()
+    
+    var node_idx := -1
+    var node_count := state.get_node_count()
+    for i in node_count:
+        if state.get_node_name(i) == node_name:
+            node_idx = i
+            break
+    _assert(node_idx != -1, "Node not found while extracting script from packed scene!")
+    
+    var extracted_script: GDScript = null
+    var property_count := state.get_node_property_count(node_idx)
+    for i in property_count:
+        if state.get_node_property_name(node_idx, i) == "script":
+            extracted_script = state.get_node_property_value(node_idx, i)
+            break
+    _assert(extracted_script is GDScript, "Extracted script is not GDScript!")
+    _assert(extracted_script.has_source_code(), "Extracted script does not have source code!")
+    
+    return extracted_script
+
+var target_index := 0
+func patch_gd(target_path: String, new_script_path: String, packer: PCKPacker, force_reload: Array):
+    var script := ResourceLoader.load(target_path, "", true)
+    _assert(script is GDScript, "Script to be patched isn't a GDScript!")
+    var old_script := script.duplicate()
+
+    var extend := save_and_pack_resource(packer, old_script, target_path.trim_suffix(".gd") + str(target_index) + ".gd")
+    target_index += 1
+
+    script.source_code = read_text(new_script_path)
+    script.source_code = "extends \"" + extend + "\"\n" + script.source_code
+    save_and_pack_resource(packer, script, target_path)
+    target_index += 1
+
+    force_reload.push_back(target_path)
+    force_reload.push_back(extend)
+
+func patch_tscn(target_path: String, new_script_path: Array, node_name: Array, packer: PCKPacker, force_reload: Array, set_extends := false):
+    var scene := load(target_path)
+    for i in range(new_script_path.size()):
+        replace_script_and_pack_original(packer, scene, node_name[i], new_script_path[i], set_extends)
+    
+    save_and_pack_resource(packer, scene, target_path)
+
+    force_reload.push_back(target_path)
+
+func replace_script_and_pack_original(packer: PCKPacker, scene: PackedScene, node_name: String, new_script_path: String, set_extends: bool):
+    var script := extract_script(scene, node_name)
+    var old_script := script.duplicate()
+    script.source_code = read_text(new_script_path)
+    var target_path := scene.resource_path.get_basename() + "_" + node_name + ".gd"
+    if set_extends:
+        target_path = scene.resource_path.get_basename() + "_" + node_name + str(target_index) + ".gd"
+        target_index += 1
+
+    var extend := save_and_pack_resource(packer, old_script, target_path)
+    if set_extends:
+        script.source_code = "extends \"" + extend + "\"\n" + script.source_code
+
+func save_and_pack_resource(packer: PCKPacker, res: Resource, target_path: String):
+    var save_path := "user://_luckyapi_patched/" + target_path.trim_prefix("res://").replace("/", "_").replace("\\", "_")
+    
+    _assert(ResourceSaver.save(save_path, res) == OK, "Failed to save resource to " + save_path + "!")
+    _assert(packer.add_file(target_path, save_path) == OK, "Failed to pack resource to " + target_path + "!")
+
+    return target_path
+
+func force_reload(resource_path: String):
+    var new := ResourceLoader.load(resource_path, "", true)
+    new.take_over_path(resource_path)
+
+
 
 func load_info(path: String, expected_id: String):
     var json := read_json(path)
@@ -656,8 +681,10 @@ class PatchInfo:
     var to_patch := ""
     var scripts := {}
 
+
+
 # Effect Builder API
-func effect(dict : Dictionary = {}):
+func effect(dict: Dictionary = {}):
 	return SymbolEffect.new(dict)
 
 class SymbolEffect:
@@ -1058,3 +1085,79 @@ class SymbolEffect:
     func sub(sub_effect: SymbolEffect):
         effect_dictionary.sub_effects.push_back(sub_effect)
         return self
+
+
+
+func dynamic_group(symbol_overrides = []):
+    var group := DynamicGroup.new()
+
+    if symbol_overrides is Array:
+        for symbol in symbol_overrides:
+            group.symbol_overrides[symbol] = true
+    elif symbol_overrides is Dictionary:
+        for symbol in symbol_overrides.keys():
+            group.symbol_overrides[symbol] = symbol_overrides[symbol]
+    
+    return group
+
+func create_dynamic_group(name, symbol_overrides = []):
+    var group := dynamic_group(symbol_overrides)
+    modloader.add_dynamic_group(name, group)
+
+    return group
+
+class DynamicGroup:
+    var name := ""
+    var cache := {}
+    var conditions := []
+    var symbol_overrides := {}
+    var modloader := null
+
+    func add_symbols(condition):
+        conditions.push_back({
+            "type": "add",
+            "condition": condition
+        })
+
+        if modloader != null:
+            modloader.update_dynamic_group(name)
+        
+        return self
+    
+    func remove_symbols(condition):
+        conditions.push_back({
+            "type": "remove",
+            "condition": condition
+        })
+
+        if modloader != null:
+            modloader.update_dynamic_group(name)
+        
+        return self
+    
+    func check_symbol(symbol):
+        var included := false
+
+        if symbol_overrides[symbol] != null:
+            cache[symbol] = symbol_overrides[symbol]
+            return symbol_overrides[symbol]
+
+        for condition in conditions:
+            if modloader.check_symbol_condition(symbol, condition.condition):
+                if condition.type == "add":
+                    included = true
+                else:
+                    included = false
+        
+        cache[symbol] = included
+        return included
+    
+    func add_group(group):
+        return self.add_symbols({
+            "group": group
+        })
+    
+    func remove_group(group):
+        return self.remove_symbols({
+            "group": group
+        })
