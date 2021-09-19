@@ -926,6 +926,15 @@ class SymbolEffect:
     func multiply_permanent_multiplier(diff: int):
         return self.multiply_value("permanent_multiplier", diff)
     
+    func dynamic_symbol_value(symbol, value, final := false):
+        effect_dictionary.dynamic_diff_target = symbol
+        effect_dictionary.dynamic_diff_multiplier = value
+        if final:
+            effect_dictionary.dynamic_diff_key = "non_prev_final_value"
+        else:
+            effect_dictionary.dynamic_diff_key = "value"
+        return self
+    
     func animate(animation: String, sfx_type := 0, targets := []):
         effect_dictionary.anim = animation
         if sfx_type:
