@@ -8,7 +8,7 @@ func init(modloader: Reference, params):
     self.values = [1]
     self.rarity = "uncommon"
     self.groups = ["farmerlikes", "fruitlikes", "monkeylikes", "plant", "food", "fruit"]
-    add_sfx_redirect("mrs_fruit")
+    self.sfx = ["jump"]
 
     self.texture = load_texture("res://valgos-content-pack/symbols/pineapple.png")
     self.name = "Pineapple"
@@ -16,4 +16,4 @@ func init(modloader: Reference, params):
 
 func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
-        symbol.add_effect_for_symbol(i, effect().if_group("fruit").change_value_bonus(values[0]).animate("bounce", "default", [symbol, i]))
+        symbol.add_effect_for_symbol(i, effect().if_group("fruit").change_value_bonus(values[0]).animate("bounce", 0, [symbol, i]))

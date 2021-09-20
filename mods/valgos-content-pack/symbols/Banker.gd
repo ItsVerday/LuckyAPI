@@ -8,7 +8,7 @@ func init(modloader: Reference, params):
     self.values = [2]
     self.rarity = "rare"
     self.groups = ["organism", "human"]
-    add_sfx_redirect("mrs_fruit")
+    self.sfx = ["growmoney"]
 
     self.texture = load_texture("res://valgos-content-pack/symbols/banker.png")
     self.name = "Banker"
@@ -16,4 +16,4 @@ func init(modloader: Reference, params):
 
 func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
-        symbol.add_effect_for_symbol(i, effect().if_group("bankerlikes").change_value_multiplier(values[0]).animate("bounce", "default", [symbol, i]))
+        symbol.add_effect_for_symbol(i, effect().if_group("bankerlikes").change_value_multiplier(values[0]).animate("bounce", 0, [symbol, i]))

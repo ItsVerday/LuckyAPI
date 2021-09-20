@@ -8,7 +8,7 @@ func init(modloader: Reference, params):
     self.values = [2, 10]
     self.rarity = "uncommon"
     self.groups = ["thunder_cloud_adds"]
-    add_sfx_redirect("mrs_fruit")
+    self.sfx = ["jump", "beam"]
     add_sfx_redirect("rain", "default", "transform")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/cloud.png")
@@ -17,5 +17,5 @@ func init(modloader: Reference, params):
 
 func add_conditional_effects(symbol, adjacent):
     for i in adjacent:
-        symbol.add_effect_for_symbol(i, effect().if_group("cloudlikes").change_value_multiplier(values[0]).animate("bounce", "default", [symbol, i]))
-    symbol.add_effect(effect().if_value_random(1).change_group("cloud_adds").animate("shake", "transform"))
+        symbol.add_effect_for_symbol(i, effect().if_group("cloudlikes").change_value_multiplier(values[0]).animate("bounce", 0, [symbol, i]))
+    symbol.add_effect(effect().if_value_random(1).change_group("cloud_adds").animate("shake", 1))

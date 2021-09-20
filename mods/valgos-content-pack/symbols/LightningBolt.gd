@@ -8,7 +8,7 @@ func init(modloader: Reference, params):
     self.values = [2, 3]
     self.rarity = "rare"
     self.groups = ["thunder_cloud_lightning"]
-    add_sfx_redirect("sun", "default", "default")
+    self.sfx = ["beam"]
 
     self.texture = load_texture("res://valgos-content-pack/symbols/lightning_bolt.png")
     self.name = "Lightning Bolt"
@@ -22,7 +22,7 @@ func add_conditional_effects(symbol, adjacent):
         symbol.add_effect_for_symbol(i, effect().change_value_multiplier(values[0]))
         animate.push_back(i)
     symbol.add_effect(effect().animate("shake", "default", animate))
-    symbol.add_effect(effect().if_property_at_least("times_displayed", values[1]).set_destroyed().animate("shake"))
+    symbol.add_effect(effect().if_property_at_least("times_displayed", values[1]).set_destroyed().animate("shake", 0))
 
 func update_value_text(symbol, values):
     symbol.value_text = values[1] - symbol.times_displayed

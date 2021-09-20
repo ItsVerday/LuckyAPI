@@ -8,7 +8,6 @@ func init(modloader: Reference, params):
     self.values = [4]
     self.rarity = "common"
     self.groups = ["totem_pole_likes"]
-    add_sfx_redirect("beastmaster")
 
     self.texture = load_texture("res://valgos-content-pack/symbols/totem_pole.png")
     self.name = "Totem Pole"

@@ -8,7 +8,7 @@ func init(modloader: Reference, params):
     self.values = [10]
     self.rarity = "very_rare"
     self.groups = []
-    add_sfx_redirect("hex_of_destruction")
+    self.sfx = ["hex"]
 
     self.texture = load_texture("res://valgos-content-pack/symbols/black_hole.png")
     self.name = "Black Hole"
@@ -26,6 +26,6 @@ func add_conditional_effects(symbol, adjacent):
         return
     
     var target := array_pick(targets)
-    symbol.add_effect(effect().animate("rotate", "default", [symbol, target]))
+    symbol.add_effect(effect().animate("rotate", 0, [symbol, target]))
     symbol.add_effect(effect().change_value_bonus(target.value * values[0]))
     symbol.add_effect_for_symbol(target, effect().set_destroyed())

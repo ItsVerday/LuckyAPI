@@ -4,11 +4,11 @@ func init(modloader: Reference, params):
     self.modloader = modloader
 
     self.id = "rainbow"
-    self.value = 5
+    self.value = 4
     self.values = [4]
     self.rarity = "very_rare"
     self.groups = ["cloudlikes", "pot_of_gold_likes", "thunder_cloud_rainbow"]
-    add_sfx_redirect("oyster")
+    self.sfx = ["shine"]
 
     self.texture = load_texture("res://valgos-content-pack/symbols/rainbow.png")
     self.name = "Rainbow"
@@ -33,4 +33,4 @@ func add_conditional_effects(symbol, adjacent):
                 continue
             symbol.add_effect_for_symbol(i, effect().change_value_multiplier(values[0]))
             animate.push_back(i)
-        symbol.add_effect(effect().animate("circle", "default", animate))
+        symbol.add_effect(effect().animate("circle", 0, animate))
