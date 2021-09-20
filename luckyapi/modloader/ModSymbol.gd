@@ -40,3 +40,6 @@ func add_conditional_effects(adjacent):
 
 func can_find_symbol(symbol_grid):
     return findable
+
+func relative_rarity(symbol_grid):
+    return 1

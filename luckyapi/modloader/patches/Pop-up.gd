@@ -7,6 +7,9 @@ onready var comfy_pillow_trigger = 0
 func option_is_findable(type):
     return modloader.can_find_symbol(type)
 
+func get_relative_rarity(type):
+    return modloader.get_relative_rarity(type)
+
 func add_cards(f_rarities):
     var email = emails[0]
     var database
@@ -104,7 +107,20 @@ func add_cards(f_rarities):
 #							break
                 randomize()
                 if rarity != null and card_pool[rarity].size() > 0:
-                    card.data = database[card_pool[rarity][floor(rand_range(0, card_pool[rarity].size()))]]
+                    if email.type == "add_tile":
+                        var pool := card_pool[rarity]
+                        print(pool)
+                        var weighted_pool := []
+                        for symbol in pool:
+                            weighted_pool.push_back({
+                                "value": symbol,
+                                "weight": get_relative_rarity(symbol)
+                            })
+                        print(weighted_pool)
+                        
+                        card.data = database[modloader.weighted_random(weighted_pool)]
+                    else:
+                        card.data = database[card_pool[rarity][floor(rand_range(0, card_pool[rarity].size()))]]
                 elif email.type == "add_item":
                     if c < forced_rarity_arr.size() and ((email.extra_values.has("or_better") and not email.extra_values.or_better) or (not email.extra_values.has("or_better"))):
                         rarity = forced_rarity_arr[c]
@@ -136,6 +152,14 @@ func add_cards(f_rarities):
             else:
                 card.data = database[saved_card_types[c]]
                 cards.push_back(card)
+        
+        var scrambled_cards := []
+        while cards.size() > 0:
+            var idx := floor(rand_range(0, cards.size()))
+            scrambled_cards.push_back(cards[idx])
+            cards.remove(idx)
+        cards = scrambled_cards
+        
         modloader.globals.main.save_game()
         var total_card_width = 0
         var tallest_height = 0

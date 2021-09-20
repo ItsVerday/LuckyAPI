@@ -54,3 +54,6 @@ func modify_global_adjacency(myself, my_grid_position, to_modify, to_modify_grid
 
 func can_find_symbol(symbol_grid):
 	  return true
+
+func modify_relative_rarity(relative_rarity, symbol_grid):
+	return relative_rarity

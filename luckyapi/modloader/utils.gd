@@ -12,6 +12,19 @@ func random(lower: float, upper: float):
     randomize()
     return rand_range(lower, upper)
 
+func weighted_random(values: Array):
+    var total := 0
+    for value in values:
+        total += value.weight
+    
+    total *= random(0, 1)
+    for value in values:
+        total -= value.weight
+        if total <= 0:
+            return value.value
+    
+    return values[values.size() - 1].value
+
 func match_value(value: String, match_against):
     if match_against is String:
         if match_against == "*":
@@ -190,6 +203,20 @@ func can_find_symbol(type):
                 return false
     
     return true
+
+func get_relative_rarity(type):
+    var displayed_icons := modloader.globals.reels.displayed_icons
+    var mod_symbols := modloader.mod_symbols
+    var rarity := 1
+    if mod_symbols.has(type):
+        rarity = mod_symbols[type].relative_rarity(displayed_icons)
+    
+    var patches := modloader.symbol_patches
+    if patches.has(type):
+        for patch in patches[type]:
+            rarity = patch.modify_relative_rarity(rarity)
+    
+    return rarity
 
 func get_symbol_groups(symbol_id: String):
     var groups := []
