@@ -211,16 +211,14 @@ func add_conditional_effects():
         mod_symbol.add_conditional_effects(self, adj_icons)
         add_effect({"comparisons": [{"a": "destroyed", "b": true, "not_prev": true}], "value_to_change": "type", "diff": "empty", "push_front": true})
         add_effect({"comparisons": [{"a": "removed", "b": true, "not_prev": true}], "value_to_change": "type", "diff": "empty", "push_front": true})
+    else:
+        .add_conditional_effects()
         
     var patches := modloader.symbol_patches[self.type]
-    var override := false
     if patches != null:
         for patch in patches:
             if patch.has_method("add_conditional_effects"):
-                override = true
                 patch.add_conditional_effects(self, adj_icons)
-    if !override:
-        .add_conditional_effects()
     
     has_effects = true
 
