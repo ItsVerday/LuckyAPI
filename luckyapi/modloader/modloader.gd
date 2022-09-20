@@ -7,6 +7,7 @@ const SymbolPatcher = preload("res://modloader/SymbolPatcher.gd")
 const modloader_version := "v0.3.0"
 const expected_versions := ["v0.11"]
 var game_version: String = "<game version not determined yet>"
+const ENVIRONMENT := "PROD"
 
 var exe_dir := OS.get_executable_path().get_base_dir()
 
@@ -29,6 +30,10 @@ var update_dynamic_groups := false
 
 func _init(tree: SceneTree):
     self.tree = tree
+
+static func dprint(x):
+    if ENVIRONMENT == "DEV":
+        print(x)
 
 func add_mod_symbol(path: String, params := {}):
     var script := load(path)
@@ -146,14 +151,13 @@ func patch_symbol(symbol_patch, id):
         if not databases.group_database.symbols.has(group):
             databases.group_database.symbols[group] = []
         
-        database_entry.groups = patched_groups
         databases.group_database.symbols[group].push_back(id)
         if not groups.has(group) and dynamic_groups.has(group):
             dynamic_groups[group].symbol_overrides[id] = true
     
-    database_entry.groups = groups
+    database_entry.groups = patched_groups
     if mod_symbol != null:
-        mod_symbol.groups = groups
+        mod_symbol.groups = patched_groups
     
     var texture := symbol_patch.patch_texture(databases.icon_texture_database[id])
     databases.icon_texture_database[id] = texture

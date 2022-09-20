@@ -18,6 +18,11 @@ func add_cards(f_rarities):
         var card_pool
         var r_chances
         if email.type == "add_tile":
+            symbols_to_choose_from = 3
+            if modloader.globals.items.item_types.has("shattered_mirror") or modloader.globals.items.item_types_at_end_of_spin.has("shattered_mirror"):
+                symbols_to_choose_from -= modloader.databases.item_database["shattered_mirror"].values[2]
+            if modloader.globals.items.item_types.has("shattered_mirror_essence") or modloader.globals.items.item_types_at_end_of_spin.has("shattered_mirror_essence"):
+                symbols_to_choose_from -= modloader.databases.item_database["shattered_mirror_essence"].values[1]
             if email.extra_values.has("forced_group"):
                 card_pool = modloader.databases.rarity_database["symbols"].duplicate(true)
                 for c in card_pool.keys():
@@ -109,15 +114,12 @@ func add_cards(f_rarities):
                 if rarity != null and card_pool[rarity].size() > 0:
                     if email.type == "add_tile":
                         var pool := card_pool[rarity]
-                        print(pool)
                         var weighted_pool := []
                         for symbol in pool:
                             weighted_pool.push_back({
                                 "value": symbol,
                                 "weight": get_relative_rarity(symbol)
                             })
-                        print(weighted_pool)
-                        
                         card.data = database[modloader.weighted_random(weighted_pool)]
                     else:
                         card.data = database[card_pool[rarity][floor(rand_range(0, card_pool[rarity].size()))]]
